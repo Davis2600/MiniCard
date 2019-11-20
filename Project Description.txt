@@ -109,8 +109,7 @@ Thursday/Friday: Operational Client with decks with no effects
 Sunday: Pushing and pulling the game state from server / Functional Game (no effects)
 Wednesday/Thursday: Effect Integration 
 Monday: Deck Builder + Storing cards in .csv file to access full card list and store decks
-Friday: Polish User Interface
-Wednesday: Possibly multi user server, ways to emote during the game, card creator, sound effects
+Wednesday: Polish User Interface, Possibly multi user server, ways to emote during the game, card creator, sound effects
 
 ***********************************************************************************************
 Version Control
