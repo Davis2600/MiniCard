@@ -1,0 +1,127 @@
+Davis Wojnovich
+dwojnovi
+
+Project Description:
+
+MiniCard: An online competitive card game
+******************************************
+
+***********************************************************************************************
+Description:
+***********************************************************************************************
+My term project is an online trading card game for two people. I plan for the gameplay to be similar to hearthstone. Each turn, a player draws a card, summons monsters, casts spells, and attacks the opponent. The goal is to lower the life of the other player to 0. A user can open up the client on their computer, connect to the server, and play a game against the another player connected to the same server across the internet. 
+
+***********************************************************************************************
+Competitive Analysis:
+***********************************************************************************************
+
+	There are a couple similar products online. Most notably, Hearthstone is an online competitive card game with deck building, a competitive rating system, and a plethora of other game modes and single player. Pokémon Trading Card Game Online is another online trading card game. PTCGO is notably different in that all cards are acquired through codes that come with buying the physical product. It also implements trading of both cards and packs between players, and single elimination tournaments. Gods Unchained is a newer card game that implements blockchain technology. Their implementation of blockchain allows players to have ownership over their digital cards and to exchange them freely for other cards and money. The blockchain also records all the previous transactions of cards.
+	
+	My project takes inspiration from this genre as a whole, but does bring notable changes to the table. My game features unique pixel art theming, is overall a more approachable game. MiniCards is entirely free to play, unlike all of the other card games I have discussed which have some barrier to high level competitive play. All of the cards are available to all players from the start of the game. Also, the game can run on many more levels of hardware specifications than these card games that implement 3D graphics and high resolution arenas. The gameplay is quite similar to hearthstone and Gods Unchained (Gods Unchained took direct inspiration from hearthstone), largely because that is what inspired me to create this term project. 
+
+
+************************************************************************************************
+Structural Plan:
+************************************************************************************************
+Client:
+	Card Class: 
+		name, attack, life, cost, image, and methods to help draw them.
+		**either**
+		effect = None # no effect
+		**or**
+		effect =  string
+	Game State Class:
+		Player Class:
+			Deck (List of Cards)
+			Hand (List of Cards)
+			Field (List of Cards)
+			Discard (List of Cards)
+			Current Life
+			ManaMax
+			CurrentMana
+		Opponent Class:
+			Deck (List of Cards)
+			Hand (List of Cards)
+			Field (List of Cards)
+			Discard (List of Cards)
+			Current Life
+			ManaMax
+			CurrentMana
+	App Class:
+		instance Game State
+		activePlayer variable
+		instance network
+
+		do Turn Started:
+			draws Card
+			set playerActive
+		
+		mouse clicked / mouse dragged:
+			check if active player
+				activate turn actions 
+		doAttack()
+		doSummon()
+		doCast()
+		doEnd() -- set plater not active 
+		checkEffect() -- called by all 'do' methods 
+
+	
+		sendState -- this then sends the whole state to the server. all the 'do' methods call this so that the other player can see the turn play out. 
+
+		methods to express the state on screen
+
+	Network Class:
+
+		handles receiving and sending requests to the server (completed for TP0)
+
+
+Server:
+
+	Constantly Listening to receive new clients
+	Accepts 2 clients, labels them and delegates them as different players
+	Contains an instance of Game State
+	Every time a move is completed, the server receives a send from the client with a new version of state. 
+	Resets after a game
+
+
+
+************************************************************************************************	
+Algorithmic Plan
+************************************************************************************************
+I suspect that the most difficult aspect of my term project would be a tie between the networking aspect, and card effects. 
+1. Networking
+	- the game state is stored in the server
+	- the players access and get receive the game state from the server, then they push any change to the server after every player action occurs. 
+	- inactive player is sent all state updates. 
+2. Effects
+	- Cards have an effect attribute that stores the name of their effect. Certain passive effects are easier to deal with, but will have to be represented visually in the drawCard method
+	- Activated effects would be stored the same way, but I would have to give them special consideration to ensure that they activate and that the effect they have is visualized and correctly reflected for both players
+	- Each specific action will check if effects that activate during that action are present on the card acting. 
+	- if so the effect will be passed to the server in addition to the current state. 
+	- then both clients can be cognizant of the effects activation and trigger any visual or message necessary 
+
+************************************************************************************************
+TimeLine Plan
+************************************************************************************************
+**This is when I expect to reach certain milestones**
+Wednesday: Class architectures and start game logic 
+Thursday/Friday: Operational Client with decks with no effects 
+Sunday: Pushing and pulling the game state from server / Functional Game (no effects)
+Wednesday/Thursday: Effect Integration 
+Monday: Deck Builder + Storing cards in .csv file to access full card list and store decks
+Friday: Polish User Interface
+Wednesday: Possibly multi user server, ways to emote during the game, card creator, sound effects
+
+***********************************************************************************************
+Version Control
+***********************************************************************************************
+Github. Picture Attached
+
+***********************************************************************************************
+Module List
+***********************************************************************************************
+Sockets
+*possibly Google Cloud (Post MVP)
+
+
+			
