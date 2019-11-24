@@ -44,8 +44,10 @@ class Player(object):
     cardWidth = 100
     def __init__(self):
         self.health = 20
+        self.activePlayer = True
         self.mana = 1
-        self.currMana = 6   
+        self.currMana = 1 
+        self.firstTurn = True  #used to prevent first the second player from starting with two mana and drawing
         self.hand = []
         self.deck = []
         self.discard = []
@@ -75,7 +77,7 @@ class Player(object):
         
     
     def drawBoard(self, canvas, side):
-        X, Y = 100, 400
+        X, Y = 100, 425
         if side == 0: #main player
             for card in self.board:
                 if not card.selected:
@@ -99,9 +101,9 @@ class Player(object):
     def drawHud(self, canvas, width, height, side):
         if side == 0:
             canvas.create_text(0, 0, text = self.message, font = 'Helvetica 25', anchor = 'nw')
-            canvas.create_text(0, width, anchor = 'sw', text = str(self.currMana), font = 'Helvetica 30', 
+            canvas.create_text(5, width, anchor = 'sw', text = str(self.currMana), font = 'Helvetica 30', 
                            fill = 'blue')
-            canvas.create_text(width, height, anchor = 'se', text = str(self.health), font = 'Helvetica 30', 
+            canvas.create_text(5, height - 30, anchor = 'sw', text = str(self.health), font = 'Helvetica 30', 
                            fill = 'red')
         if side  == 1:
             canvas.create_text(Player.enemyBoxDims[0], Player.enemyBoxDims[1], anchor = 'nw', text = str(self.currMana), font = 'Helvetica 30', 
@@ -187,9 +189,11 @@ class Game(App):
         player = Player()
         #TODO for now, the opponent is also a player created in the client, it should eventually recieve from server
         opponent = Player()
+        opponent.activePlayer = False
         self.state = GameState(player, opponent)
-        self.activePlayer = True #will need a way to pick active player 
         self.startGame()
+        self.timePassed = 0
+        self.state.player.firstTurn = False # first turn prevents gaining extra mana on first turn, only effects p2
 
     def startGame(self):
         for i in range(5):
@@ -203,6 +207,24 @@ class Game(App):
         if event.key == '0':
             print('switching sides')
             self.state.player, self.state.opponent = self.state.opponent, self.state.player
+        if event.key == 'Enter' and self.state.player.activePlayer == True:
+            self.swapTurns()
+
+
+    def swapTurns(self):
+            self.state.player.message = 'Turn Over'
+            self.state.player.activePlayer = False 
+            self.state.opponent.activePlayer = True
+            players = self.state.player, self.state.opponent
+            for player in players:
+                if player.activePlayer:
+                    if player.firstTurn:
+                        player.firstTurn = False
+                    else:
+                        player.pickupCard()
+                        if player.mana < Player.manaMax:
+                            player.mana += 1
+                        player.currMana = player.mana
 
     def mouseDragged(self, event):
         selection = self.state.player.getSelected()
@@ -214,6 +236,9 @@ class Game(App):
         print('released')
         #if selection in hand, try to summon 
         selection = self.state.player.getSelected()
+        if not self.state.player.activePlayer:
+            selection.selected = False
+            return None
         if selection != None and selection in self.state.player.hand:
             self.attemptSummon(selection, event.x, event.y)
             selection.selected = False
@@ -273,8 +298,14 @@ class Game(App):
 
     def redrawAll(self, canvas):
         #canvas.create_rectangle(100, 0, 700, 500, fill = 'light blue')
+        if self.state.player.activePlayer == True:
+            canvas.create_rectangle(0,0,self.width,self.height, width = 20, outline = 'green')
+        else:
+             canvas.create_rectangle(0,0,self.width,self.height, width = 20, outline = 'orange')           
         self.state.opponent.draw(canvas, self.width, self.height, 1)
         self.state.player.draw(canvas, self.width, self.height, 0) 
+        canvas.create_text(self.width - 10, self.height, text = 'Press "Enter" to end your turn',
+         anchor  = 'se', font = 'Helvetica 15', fill = 'black')
         
 
 
