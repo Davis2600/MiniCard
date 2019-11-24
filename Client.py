@@ -82,7 +82,7 @@ class Player(object):
                     card.x = X
                     card.y = Y
                 card.drawCard(canvas, Player.cardWidth, 'light blue')
-                X += 100    
+                X += 150    
         X, Y = 100, 200 
         if side == 1: # opponent
             for card in self.board:
@@ -90,7 +90,7 @@ class Player(object):
                     card.x = X
                     card.y = Y
                 card.drawCard(canvas, Player.cardWidth, 'red')
-                X += 100    
+                X += 150    
             canvas.create_rectangle(Player.enemyBoxDims[0], Player.enemyBoxDims[1], 
                                      Player.enemyBoxDims[2], Player.enemyBoxDims[3], 
                                      fill = 'red')
@@ -103,6 +103,12 @@ class Player(object):
                            fill = 'blue')
             canvas.create_text(width, height, anchor = 'se', text = str(self.health), font = 'Helvetica 30', 
                            fill = 'red')
+        if side  == 1:
+            canvas.create_text(Player.enemyBoxDims[0], Player.enemyBoxDims[1], anchor = 'nw', text = str(self.currMana), font = 'Helvetica 30', 
+                           fill = 'blue')
+            canvas.create_text(Player.enemyBoxDims[2], Player.enemyBoxDims[3], anchor = 'se', text = str(self.health), font = 'Helvetica 30', 
+                           fill = 'black')            
+
 
     def makeBasicDeck(self):
         for i in range(5):
@@ -121,12 +127,17 @@ class Player(object):
         self.hand.append(self.deck.pop())
 
     def clearBoard(self):
-        removeCount = 0
-        for card in self.board:
-            if card.curLife <= 0:
-                self.board.remove(card)
-                removeCount += 1
-        print(removeCount)
+        removeList = []
+        index = 0
+        while index < len(self.board):
+            if self.board[index].curLife <= 0:
+                removeList.append(self.board[index].name)
+                self.board.remove(self.board[index])
+            else:
+                index += 1
+        if len(removeList) > 0:
+            removeString = ', '.join(removeList) + ' Died'         
+            self.message = removeString
 
     def selectCard(self, x, y):
         #recall past selection 
@@ -217,7 +228,7 @@ class Game(App):
 
     def attemptSummon(self, selection, x, y):
         leftMargin, rightMargin = 100, self.width - 100
-        bottomMargin = self.height - 300
+        bottomMargin = self.height - 200
         if Game.checkInField(x, y, (leftMargin, 0, rightMargin, bottomMargin)):
             print('released in field')
             if self.state.player.currMana >= selection.cost and len(self.state.player.board) < 6:
@@ -231,14 +242,24 @@ class Game(App):
 
     def attemptAttack(self, selection, x , y):
         #first check if direct attack
-        if x > Player.enemyBoxDims[0] and x < Player.enemyBoxDims[2] and \
-            y > Player.enemyBoxDims[1] and y < Player.enemyBoxDims[3]:
+        if Game.checkInField(x, y, Player.enemyBoxDims):
             print('attacking opponent')
             self.state.opponent.health -= selection.attack
-        halfHeight, halfWidth = Player.cardWidth, Player.cardWidth / 2
-        for enemyCard in self.state.oppponent.board:
-            bounds = enemyCard.x - halfWidth, enemyCard.x + halfWidth, \
-                     enemyCard.y - halfHeight, enemyCard.y + halfHeight
+            return None
+        
+        halfHeight, halfWidth = Player.cardWidth + 20, (Player.cardWidth / 2) + 20
+        for enemyCard in self.state.opponent.board:
+            bounds = enemyCard.x - halfWidth, enemyCard.y - halfHeight, \
+                     enemyCard.x + halfWidth, enemyCard.y + halfHeight
+            if Game.checkInField(x, y, bounds):
+                enemyCard.curLife -= selection.attack
+                selection.curLife -= enemyCard.attack
+                self.state.player.clearBoard()
+                self.state.opponent.clearBoard()
+                return None
+        
+   
+   
     @staticmethod
     def checkInField(x, y, dims):
         if x > dims[0] and y > dims[1] and x < dims[2] and y < dims[3]:
@@ -252,8 +273,9 @@ class Game(App):
 
     def redrawAll(self, canvas):
         #canvas.create_rectangle(100, 0, 700, 500, fill = 'light blue')
-        self.state.player.draw(canvas, self.width, self.height, 0) 
         self.state.opponent.draw(canvas, self.width, self.height, 1)
+        self.state.player.draw(canvas, self.width, self.height, 0) 
+        
 
 
 
