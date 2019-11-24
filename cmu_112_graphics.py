@@ -1,3 +1,5 @@
+#Code Cited From http://www.cs.cmu.edu/~112/notes/notes-animations-part1.html
+
 # cmu_112_graphics.py
 # version 0.8.5
 
