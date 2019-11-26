@@ -53,13 +53,13 @@ def threadedClient(c):
                 break
             else:
                 print('Recieved ', reply)
-                contents = reply.split(',')
+                contents = reply.split('|||')
                 playerNum = contents[0] #gets the ID
                 activeP = contents[1] #gets that clients player 1
                 passiveP = contents[2] #gets that clients player 2
-
-                #build the state from the strings
                 
+                #build the state from the strings
+
                 if index == 0:
                     newIndex = 1
                 else:

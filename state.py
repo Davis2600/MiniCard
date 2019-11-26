@@ -7,7 +7,7 @@ class GameState(object):
         self.activePlayer = activePlayer
         self.opponent = opponent
     def __repr__(self):
-        rep = str(self.activePlayer) + ',' + str(self.opponent)
+        rep = str(self.activePlayer) + '|||' + str(self.opponent)
         return rep
 
     def swap(self):

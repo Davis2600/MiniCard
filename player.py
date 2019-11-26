@@ -83,14 +83,14 @@ class Player(object):
     def makeBasicDeck(self):
         for i in range(3):
             self.deck.append(Card('Newt', 1, (2,1), None))
-        #for i in range(4):
-        #    self.deck.append(Card('Minion', 2, (3,3), None))
-        #for i in range(3):
-        #    self.deck.append(Card('Hound', 4, (5,2), None))
-        #for i in range(4):
-        #    self.deck.append(Card('Beast', 6, (8,8), None))
-        #for i in range(2):
-        #    self.deck.append(Card('Dragon', 10, (12,12), None))
+        for i in range(4):
+            self.deck.append(Card('Minion', 2, (3,3), None))
+        for i in range(3):
+            self.deck.append(Card('Hound', 4, (5,2), None))
+        for i in range(4):
+            self.deck.append(Card('Beast', 6, (8,8), None))
+        for i in range(2):
+            self.deck.append(Card('Dragon', 10, (12,12), None))
             
     #reanamed to avoid confusion with draw methods
     def pickupCard(self):
@@ -102,6 +102,7 @@ class Player(object):
         while index < len(self.board):
             if self.board[index].curLife <= 0:
                 removeList.append(self.board[index].name)
+                self.discard.append(self.board[index])
                 self.board.remove(self.board[index])
             else:
                 index += 1
@@ -140,8 +141,62 @@ class Player(object):
                 selection = card
                 break
         return selection
-    
+
+    def buildPlayerFromString(self, string):
+        components = string.split(';')
+        self.health = components[0]
+        self.currentPlayer = components[1]
+        self.mana = components[2]
+        self.currMana = components[3]
+        self.firstTurn = components[4]
+        self.message = components[5]
+        self.deck = Player.buildZoneFromString(components[6])
+        self.hand = Player.buildZoneFromString(components[7])
+        self.board = Player.buildZoneFromString(components[8])
+        self.discard = Player.buildZoneFromString(components[9])
+    @staticmethod
+    def buildZoneFromString(string):
+        if string == '':
+            return []
+        zoneString = string.split(',')
+        zoneList = []
+        for cardString in zoneString:
+            card = Card()
+            card.createCardFromString(cardString)
+            zoneList.append(card)
+        return zoneList
+
+        
+
     def __repr__(self):
-        return str([self.deck, self.hand, self.board])
+        deck = ''
+        for card in self.deck:
+            deck = deck + str(card) + ','
+        if deck != '':
+            deck = deck[0:-1] #remove last comma
+        hand = ''
+        for card in self.hand:
+            hand = hand + str(card) + ','
+        if hand != '':
+            hand = hand[0:-1]
+        board = ''
+        for card in self.board:
+            board = board +  str(card) + ','
+        if board != '':
+            board = board[0:-1]
+        discard = ''
+        for card in self.discard:
+            discard = discard + str(card) + ','
+        if discard != '':
+            discard = discard[0:-1]
+        cards = deck + ';' + hand + ';' + board + ';' + discard + ';'
+        rep = (str(self.health) + ';' +
+               str(self.currentPlayer) + ';' +
+               str(self.mana) + ';' +
+               str(self.currMana) + ';' +
+               str(self.firstTurn) + ';' +
+               str(self.message) + ';' + cards)
+               
+        return rep
 
 

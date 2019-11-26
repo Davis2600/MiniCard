@@ -7,7 +7,7 @@ class Card(object):
     fontSizeRatio = 0.3
     nameSizeRatio = 0.15
     cardCount =0
-    def __init__(self, name = 'none', cost = 0, stats = (0,0), effect = ''):
+    def __init__(self, name = 'none', cost = 0, stats = (0,0), effect = 'none'):
 
         
         #card Stuff
