@@ -144,11 +144,11 @@ class Player(object):
 
     def buildPlayerFromString(self, string):
         components = string.split(';')
-        self.health = components[0]
-        self.currentPlayer = components[1]
-        self.mana = components[2]
-        self.currMana = components[3]
-        self.firstTurn = components[4]
+        self.health = int(components[0])
+        self.currentPlayer = (components[1] == 'True')
+        self.mana = int(components[2])
+        self.currMana = int(components[3])
+        self.firstTurn = (components[4] == 'True')
         self.message = components[5]
         self.deck = Player.buildZoneFromString(components[6])
         self.hand = Player.buildZoneFromString(components[7])

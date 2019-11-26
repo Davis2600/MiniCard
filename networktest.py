@@ -1,4 +1,6 @@
 import socket
+from player import Player
+from state import GameState
 
 class Network:
     def __init__(self):
@@ -7,11 +9,18 @@ class Network:
         #change this when using on other computers
         self.port = 1234
         self.addr = (self.host, self.port)
-        self.id = self.connect()
+        self.id = 'temp'
 
     def connect(self):
         self.client.connect(self.addr)
-        return self.client.recv(4096).decode()
+        firstMessage = self.client.recv(4096).decode()
+        contents = firstMessage.split('|||')
+        self.id = contents[0]
+        player0 = Player()
+        player1 = Player()
+        player0.buildPlayerFromString(contents[1])
+        player1.buildPlayerFromString(contents[2])
+        return GameState(player0, player1)
 
     def send(self, data):
         try:
@@ -23,14 +32,14 @@ class Network:
         except socket.error as e:
             return str(e)
 
-
+'''
 def sendData(toSend):
     print('sending Data')
-    data = str(network.id) + ',' + str(toSend)
+    data = str(network.id) + '|||' + str(toSend)
     reply = network.send(data)
     print('completed')
     return reply
-    
+
 network = Network()
 run = True
 number = 5
@@ -39,4 +48,4 @@ while run:
     print('input = ', number)
     message = sendData(number)
     print('the message = ', message)
-
+'''
