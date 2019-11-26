@@ -9,15 +9,34 @@ MiniCard: An online competitive card game
 ***********************************************************************************************
 Description:
 ***********************************************************************************************
-My term project is an online trading card game for two people. I plan for the gameplay to be similar to hearthstone. Each turn, a player draws a card, summons monsters, casts spells, and attacks the opponent. The goal is to lower the life of the other player to 0. A user can open up the client on their computer, connect to the server, and play a game against the another player connected to the same server across the internet. 
+My term project is an online trading card game for two people. I plan for the gameplay to be 
+similar to hearthstone. Each turn, a player draws a card, summons monsters, casts spells, and 
+attacks the opponent. The goal is to lower the life of the other player to 0. A user can open 
+up the client on their computer, connect to the server, and play a game against the another 
+player connected to the same server across the internet. 
 
 ***********************************************************************************************
 Competitive Analysis:
 ***********************************************************************************************
 
-	There are a couple similar products online. Most notably, Hearthstone is an online competitive card game with deck building, a competitive rating system, and a plethora of other game modes and single player. Pokémon Trading Card Game Online is another online trading card game. PTCGO is notably different in that all cards are acquired through codes that come with buying the physical product. It also implements trading of both cards and packs between players, and single elimination tournaments. Gods Unchained is a newer card game that implements blockchain technology. Their implementation of blockchain allows players to have ownership over their digital cards and to exchange them freely for other cards and money. The blockchain also records all the previous transactions of cards.
+	There are a couple similar products online. Most notably, Hearthstone is an online 
+competitive card game with deck building, a competitive rating system, and a plethora of other
+ game modes and single player. Pokémon Trading Card Game Online is another online trading card
+ game. PTCGO is notably different in that all cards are acquired through codes that come with 
+buying the physical product. It also implements trading of both cards and packs between 
+players, and single elimination tournaments. Gods Unchained is a newer card game that implements 
+blockchain technology. Their implementation of blockchain allows players to have ownership over 
+their digital cards and to exchange them freely for other cards and money. The blockchain also 
+records all the previous transactions of cards.
 	
-	My project takes inspiration from this genre as a whole, but does bring notable changes to the table. My game features unique pixel art theming, is overall a more approachable game. MiniCards is entirely free to play, unlike all of the other card games I have discussed which have some barrier to high level competitive play. All of the cards are available to all players from the start of the game. Also, the game can run on many more levels of hardware specifications than these card games that implement 3D graphics and high resolution arenas. The gameplay is quite similar to hearthstone and Gods Unchained (Gods Unchained took direct inspiration from hearthstone), largely because that is what inspired me to create this term project. 
+	My project takes inspiration from this genre as a whole, but does bring notable changes
+ to the table. My game features unique pixel art theming, is overall a more approachable game. 
+MiniCards is entirely free to play, unlike all of the other card games I have discussed which 
+have some barrier to high level competitive play. All of the cards are available to all players
+from the start of the game. Also, the game can run on many more levels of hardware specifications 
+than these card games that implement 3D graphics and high resolution arenas. The gameplay is 
+quite similar to hearthstone and Gods Unchained (Gods Unchained took direct inspiration from 
+hearthstone), largely because that is what inspired me to create this term project. 
 
 
 ************************************************************************************************
@@ -88,14 +107,18 @@ Server:
 ************************************************************************************************	
 Algorithmic Plan
 ************************************************************************************************
-I suspect that the most difficult aspect of my term project would be a tie between the networking aspect, and card effects. 
+I suspect that the most difficult aspect of my term project would be a tie between 
+the networking aspect, and card effects. 
 1. Networking
 	- the game state is stored in the server
-	- the players access and get receive the game state from the server, then they push any change to the server after every player action occurs. 
+	- the players access and get receive the game state from the server, then they push any 
+	  change to the server after every player action occurs. 
 	- inactive player is sent all state updates. 
 2. Effects
-	- Cards have an effect attribute that stores the name of their effect. Certain passive effects are easier to deal with, but will have to be represented visually in the drawCard method
-	- Activated effects would be stored the same way, but I would have to give them special consideration to ensure that they activate and that the effect they have is visualized and correctly reflected for both players
+	- Cards have an effect attribute that stores the name of their effect. 
+	  Certain passive effects are easier to deal with, but will have to be represented visually in the drawCard method
+	- Activated effects would be stored the same way, but I would have to give them special consideration 
+	  to ensure that they activate and that the effect they have is visualized and correctly reflected for both players
 	- Each specific action will check if effects that activate during that action are present on the card acting. 
 	- if so the effect will be passed to the server in addition to the current state. 
 	- then both clients can be cognizant of the effects activation and trigger any visual or message necessary 
@@ -122,5 +145,11 @@ Module List
 Sockets
 *possibly Google Cloud (Post MVP)
 
-
-			
+***********************************************************************************************
+TP2 UPDATE:
+***********************************************************************************************
+The high level design of my project has not changed since TP1. Everything is consistent with 
+the initial Design Document I shared, Though I do have more detail regarding my networking
+algorithm. I ended up having to build very particular custom repr functions for both the cards
+and the player class and a function in both the player and card class that can recreate an 
+object given a repr output. 
