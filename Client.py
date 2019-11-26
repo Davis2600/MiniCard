@@ -1,233 +1,91 @@
 from tkinter import *
-#from networktest import *
+from networktest import *
 # cmu_112_graphics cited from 
 # http://www.cs.cmu.edu/~112/notes/notes-animations-part1.html
 from cmu_112_graphics import *
 import random
-class Card(object):
-    fontSizeRatio = 0.3
-    nameSizeRatio = 0.15
-    def __init__(self, name, image, cost, stats, effect):
-        self.x = 100
-        self.y = 100
+from card import Card
+from player import Player
+from state import GameState
+
+class ModalGame(ModalApp):
+    def appStarted(app):
+
+        app.titleScreenMode = TitleScreenMode()
+        app.gameMode = Game()
+        app.setActiveMode(app.titleScreenMode)
+
+class TitleScreenMode(Mode):
+
+    def redrawAll(mode, canvas):
+        canvas.create_text(mode.width/2,mode.height/2, text = "MiniCards: Press Enter to Begin",
+            font = "Helvetica 28")
+
+    def keyPressed(mode, event):
+        mode.app.setActiveMode(mode.app.gameMode)
         
-        #card Stuff
-        self.name = name
-        self.cost = cost
-        self.attack = stats[0]
-        self.maxLife = stats[1]
-        self.curLife = self.maxLife
-        self.effect = effect
-        self.selected = False
 
-        def __repr__(self):
-            return f'{self.name}: cost:{self.cost}, attack:{self.attack}, life:{self.life}'
-
-    def drawCard(self, canvas, width, color):
-        height = 2 * width
-        if self.selected:
-            outline = 'yellow'
-        else:
-            outline = 'black'
-        font = 'Helvetica ' + str(int(width * Card.fontSizeRatio))
-        nameFont = 'Helvetica ' + str(int(width * Card.nameSizeRatio))
-        canvas.create_rectangle(self.x - (width/2), self.y - (height/2), self.x + (width/2), self.y + (height/2),
-                                fill = color, outline = outline)
-        canvas.create_text(self.x - (width/2), self.y - (height/2), text = str(self.cost), font = font, fill = 'blue', anchor = 'nw')
-        canvas.create_text(self.x, self.y - (3/8) * height, text = self.name, font  = nameFont)
-        canvas.create_text(self.x - (width/4), self.y + (height/4), text = str(self.attack), font = font)
-        canvas.create_text(self.x + (width/4), self.y + (height/4), text = str(self.curLife), font = font)
-
-class Player(object):
-    enemyBoxDims = 300, 0, 600, 100
-    manaMax = 10  
-    cardWidth = 100
-    def __init__(self):
-        self.health = 20
-        self.activePlayer = True
-        self.mana = 1
-        self.currMana = 1 
-        self.firstTurn = True  #used to prevent first the second player from starting with two mana and drawing
-        self.hand = []
-        self.deck = []
-        self.discard = []
-        self.board = []
-        self.makeBasicDeck()
-        self.message = '' #message to be displayed to the player at a given time
-        random.shuffle(self.deck)
-
-    def draw(self, canvas, width, height, side):
-        #Draw Hand 
-        self.drawHand(canvas, side)
-        self.drawBoard(canvas, side)
-        self.drawHud(canvas, width, height, side)
-        #Draw Deck
-        canvas.create_rectangle(675, 575, 775, 725, fill = 'light blue')
-        canvas.create_text(720, 630, text = f'{len(self.deck)}')
-
-    def drawHand(self, canvas, side):
-        X, Y = 100, 725
-        if side == 0: #main player
-            for card in self.hand:
-                if not card.selected:
-                    card.x = X
-                    card.y = Y
-                card.drawCard(canvas, Player.cardWidth, 'light blue')
-                X += 100
-        
-    
-    def drawBoard(self, canvas, side):
-        X, Y = 100, 425
-        if side == 0: #main player
-            for card in self.board:
-                if not card.selected:
-                    card.x = X
-                    card.y = Y
-                card.drawCard(canvas, Player.cardWidth, 'light blue')
-                X += 150    
-        X, Y = 100, 200 
-        if side == 1: # opponent
-            for card in self.board:
-                if not card.selected:
-                    card.x = X
-                    card.y = Y
-                card.drawCard(canvas, Player.cardWidth, 'red')
-                X += 150    
-            canvas.create_rectangle(Player.enemyBoxDims[0], Player.enemyBoxDims[1], 
-                                     Player.enemyBoxDims[2], Player.enemyBoxDims[3], 
-                                     fill = 'red')
-
-
-    def drawHud(self, canvas, width, height, side):
-        if side == 0:
-            canvas.create_text(0, 0, text = self.message, font = 'Helvetica 25', anchor = 'nw')
-            canvas.create_text(5, width, anchor = 'sw', text = str(self.currMana), font = 'Helvetica 30', 
-                           fill = 'blue')
-            canvas.create_text(5, height - 30, anchor = 'sw', text = str(self.health), font = 'Helvetica 30', 
-                           fill = 'red')
-        if side  == 1:
-            canvas.create_text(Player.enemyBoxDims[0], Player.enemyBoxDims[1], anchor = 'nw', text = str(self.currMana), font = 'Helvetica 30', 
-                           fill = 'blue')
-            canvas.create_text(Player.enemyBoxDims[2], Player.enemyBoxDims[3], anchor = 'se', text = str(self.health), font = 'Helvetica 30', 
-                           fill = 'black')            
-
-
-    def makeBasicDeck(self):
-        for i in range(5):
-            self.deck.append(Card('Newt', None, 1, (2,1), None))
-        for i in range(4):
-            self.deck.append(Card('Minion', None, 2, (3,3), None))
-        for i in range(3):
-            self.deck.append(Card('Hound', None, 4, (5,2), None))
-        for i in range(4):
-            self.deck.append(Card('Beast', None, 6, (8,8), None))
-        for i in range(2):
-            self.deck.append(Card('Dragon', None, 10, (12,12), None))
-            
-    #reanamed to avoid confusion with draw methods
-    def pickupCard(self):
-        self.hand.append(self.deck.pop())
-
-    def clearBoard(self):
-        removeList = []
-        index = 0
-        while index < len(self.board):
-            if self.board[index].curLife <= 0:
-                removeList.append(self.board[index].name)
-                self.board.remove(self.board[index])
-            else:
-                index += 1
-        if len(removeList) > 0:
-            removeString = ', '.join(removeList) + ' Died'         
-            self.message = removeString
-
-    def selectCard(self, x, y):
-        #recall past selection 
-        pastSelection = self.getSelected()
-        #remove current selection
-        for card in self.hand:
-            card.selected = False
-        for card in self.board:
-            card.selected = False
-        #make new selection 
-        halfWidth, halfHeight = 50, 100
-        for card in self.hand:
-            if card.x + halfWidth > x and card.x - halfWidth < x:
-                if card.y + halfHeight > y and card.y - halfHeight < y:
-                    card.selected = True  
-        for card in self.board:
-            if card.x + halfWidth > x and card.x - halfWidth < x:
-                if card.y + halfHeight > y and card.y - halfHeight < y:
-                    card.selected = True   
- 
-
-    def getSelected(self):
-        selection = None
-        for card in self.hand:
-            if card.selected == True:
-                selection = card
-                break
-        for card in self.board:
-            if card.selected == True:
-                selection = card
-                break
-        return selection
-    #TODO repr for online
-
-
-class GameState(object):
-    def __init__(self, player, opponent):
-        self.player = player
-        self.opponent = opponent
-    def __repr__(self):
-        return str([str(self.player), str(self.oponent)])
-
-#NOTE #MP indicates stuff that must be derived from the other player, or code that must be moved to the server
-class Game(App):
+class Game(Mode):
     def appStarted(self):
-        #network = Network()
-        player = Player()
+        self.network = Network()
+        
+        #activePlayer = Player()
         #TODO for now, the opponent is also a player created in the client, it should eventually recieve from server
-        opponent = Player()
-        opponent.activePlayer = False
-        self.state = GameState(player, opponent)
-        self.startGame()
+        #opponent = Player()
+        #opponent.currentPlayer = False
+        self.state = self.network.connect()
+        #self.startGame()
         self.timePassed = 0
-        self.state.player.firstTurn = False # first turn prevents gaining extra mana on first turn, only effects p2
+        self.state.activePlayer.firstTurn = False # first turn prevents gaining extra mana on first turn, only effects p2
 
-    def startGame(self):
-        for i in range(5):
-            self.state.player.pickupCard()
-            self.state.opponent.pickupCard()
+    def sendData(self, passive = False):
+        print('sending Data')
+        if not passive:
+            data = str(self.network.id) + '|||' + str(self.state)
+        else:
+            data = self.network.id + '*'
+        reply = self.network.send(data)
+        print('completed')
+        components = reply.split('|||')
+        activeP = components[0]
+        passiveP = components[1]
+        self.state.activePlayer.buildPlayerFromString(activeP)
+        self.state.opponent.buildPlayerFromString(passiveP)
+        print(type(self.state))
+        
+
+
     
     def mousePressed(self, event):
-        self.state.player.selectCard(event.x, event.y)
+        self.state.activePlayer.selectCard(event.x, event.y)
         
     def keyPressed(self,event):
         if event.key == '0':
             print('switching sides')
-            self.state.player, self.state.opponent = self.state.opponent, self.state.player
-        if event.key == 'Enter' and self.state.player.activePlayer == True:
+            self.state.activePlayer, self.state.opponent = self.state.opponent, self.state.activePlayer
+        if event.key == 'Enter' and self.state.activePlayer.currentPlayer == True:
+            #print(self.state.activePlayer)
             self.swapTurns()
+            self.sendData()
 
 
     def swapTurns(self):
-            self.state.player.message = 'Turn Over'
-            self.state.player.activePlayer = False 
-            self.state.opponent.activePlayer = True
-            players = self.state.player, self.state.opponent
-            for player in players:
-                if player.activePlayer:
-                    if player.firstTurn:
-                        player.firstTurn = False
+            self.state.activePlayer.message = 'Turn Over'
+            self.state.activePlayer.currentPlayer = False 
+            self.state.opponent.currentPlayer = True
+            activePlayers = self.state.activePlayer, self.state.opponent
+            for activePlayer in activePlayers:
+                if activePlayer.currentPlayer:
+                    if activePlayer.firstTurn:
+                        activePlayer.firstTurn = False
                     else:
-                        player.pickupCard()
-                        if player.mana < Player.manaMax:
-                            player.mana += 1
-                        player.currMana = player.mana
+                        activePlayer.pickupCard()
+                        if activePlayer.mana < activePlayer.manaMax:
+                            activePlayer.mana += 1
+                        activePlayer.currMana = activePlayer.mana
 
     def mouseDragged(self, event):
-        selection = self.state.player.getSelected()
+        selection = self.state.activePlayer.getSelected()
         if selection != None:
             selection.x = event.x
             selection.y = event.y
@@ -235,20 +93,30 @@ class Game(App):
     def mouseReleased(self, event):
         print('released')
         #if selection in hand, try to summon 
-        selection = self.state.player.getSelected()
-        if not self.state.player.activePlayer:
+        selection = self.state.activePlayer.getSelected()
+        if selection == None:
+            return
+        if not self.state.activePlayer.currentPlayer:
             selection.selected = False
-            return None
-        if selection != None and selection in self.state.player.hand:
+            return 
+        if selection != None and selection in self.state.activePlayer.hand:
             self.attemptSummon(selection, event.x, event.y)
             selection.selected = False
-            return None
-        if selection != None and selection in self.state.player.board:
+            self.sendData()
+            return 
+        if selection != None and selection in self.state.activePlayer.board:
             pass
             self.attemptAttack(selection, event.x, event.y)
             selection.selected = False
-            return None
+            self.sendData()
+            return 
         
+    def timerFired(self):
+        self.timePassed += 1
+        if self.timePassed == 10:
+            if self.state.activePlayer.currentPlayer == False:
+                self.sendData(passive = True)
+            self.timePassed = 0
 
 
     def attemptSummon(self, selection, x, y):
@@ -256,13 +124,13 @@ class Game(App):
         bottomMargin = self.height - 200
         if Game.checkInField(x, y, (leftMargin, 0, rightMargin, bottomMargin)):
             print('released in field')
-            if self.state.player.currMana >= selection.cost and len(self.state.player.board) < 6:
-                self.state.player.currMana -= selection.cost
-                self.state.player.hand.remove(selection)
-                self.state.player.board.append(selection)
-                self.state.player.message = f'Summoned {selection.name}'               
+            if self.state.activePlayer.currMana >= selection.cost and len(self.state.activePlayer.board) < 6:
+                self.state.activePlayer.currMana -= selection.cost
+                self.state.activePlayer.hand.remove(selection)
+                self.state.activePlayer.board.append(selection)
+                self.state.activePlayer.message = f'Summoned {selection.name}'               
             else:
-                self.state.player.message = 'Insufficent Mana'
+                self.state.activePlayer.message = 'Insufficent Mana'
 
 
     def attemptAttack(self, selection, x , y):
@@ -279,7 +147,7 @@ class Game(App):
             if Game.checkInField(x, y, bounds):
                 enemyCard.curLife -= selection.attack
                 selection.curLife -= enemyCard.attack
-                self.state.player.clearBoard()
+                self.state.activePlayer.clearBoard()
                 self.state.opponent.clearBoard()
                 return None
         
@@ -298,16 +166,16 @@ class Game(App):
 
     def redrawAll(self, canvas):
         #canvas.create_rectangle(100, 0, 700, 500, fill = 'light blue')
-        if self.state.player.activePlayer == True:
+        if self.state.activePlayer.currentPlayer == True:
             canvas.create_rectangle(0,0,self.width,self.height, width = 20, outline = 'green')
         else:
              canvas.create_rectangle(0,0,self.width,self.height, width = 20, outline = 'orange')           
         self.state.opponent.draw(canvas, self.width, self.height, 1)
-        self.state.player.draw(canvas, self.width, self.height, 0) 
+        self.state.activePlayer.draw(canvas, self.width, self.height, 0) 
         canvas.create_text(self.width - 10, self.height, text = 'Press "Enter" to end your turn',
          anchor  = 'se', font = 'Helvetica 15', fill = 'black')
         
 
 
 
-app = Game(800, 800)
+app = ModalGame(width = 800, height = 800)
