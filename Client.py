@@ -13,6 +13,8 @@ class ModalGame(ModalApp):
 
         app.titleScreenMode = TitleScreenMode()
         app.gameMode = Game()
+        app.winMode = WinMode()
+        app.loseMode = LoseMode()
         app.setActiveMode(app.titleScreenMode)
 
 class TitleScreenMode(Mode):
@@ -23,7 +25,24 @@ class TitleScreenMode(Mode):
 
     def keyPressed(mode, event):
         mode.app.setActiveMode(mode.app.gameMode)
-        
+
+class WinMode(Mode):
+
+    def redrawAll(mode, canvas):
+        canvas.create_text(mode.width/2,mode.height/2, text = "You Win",
+            font = "Helvetica 28", fill = 'green')
+
+    def keyPressed(mode, event):
+        mode.app.setActiveMode(mode.app.gameMode)
+
+class LoseMode(Mode):
+
+    def redrawAll(mode, canvas):
+        canvas.create_text(mode.width/2,mode.height/2, text = "You Lose",
+            font = "Helvetica 28", fill = 'red')
+
+    def keyPressed(mode, event):
+        mode.app.setActiveMode(mode.app.gameMode)        
 
 class Game(Mode):
     def appStarted(self):
@@ -65,6 +84,9 @@ class Game(Mode):
             self.state.activePlayer, self.state.opponent = self.state.opponent, self.state.activePlayer
         if event.key == 'Enter' and self.state.activePlayer.currentPlayer == True:
             #print(self.state.activePlayer)
+            for card in self.state.activePlayer.board:
+                card.summoningSickness = False
+                card.attackedThisTurn = False
             self.swapTurns()
             self.sendData()
 
@@ -116,6 +138,7 @@ class Game(Mode):
         if self.timePassed == 10:
             if self.state.activePlayer.currentPlayer == False:
                 self.sendData(passive = True)
+                self.checkWin()
             self.timePassed = 0
 
 
@@ -134,12 +157,16 @@ class Game(Mode):
 
 
     def attemptAttack(self, selection, x , y):
+        if selection.summoningSickness or selection.attackedThisTurn:
+            return
         #first check if direct attack
         if Game.checkInField(x, y, Player.enemyBoxDims):
             print('attacking opponent')
+            selection.attackedThisTurn = True
             self.state.opponent.health -= selection.attack
-            return None
-        
+            self.checkWin()
+            return 
+        #check if card attack
         halfHeight, halfWidth = Player.cardWidth + 20, (Player.cardWidth / 2) + 20
         for enemyCard in self.state.opponent.board:
             bounds = enemyCard.x - halfWidth, enemyCard.y - halfHeight, \
@@ -149,9 +176,14 @@ class Game(Mode):
                 selection.curLife -= enemyCard.attack
                 self.state.activePlayer.clearBoard()
                 self.state.opponent.clearBoard()
-                return None
+                selection.attackedThisTurn = True
+                return 
         
-   
+    def checkWin(self):
+        if self.state.activePlayer.health <= 0:
+            self.app.setActiveMode(self.app.loseMode)
+        elif self.state.opponent.health <= 0:
+            self.app.setActiveMode(self.app.winMode)
    
     @staticmethod
     def checkInField(x, y, dims):
