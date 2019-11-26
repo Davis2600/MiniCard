@@ -22,6 +22,8 @@ class Card(object):
         self.x = -1 # -1 indicates not visible on the board
         self.y = -1
         self.id = self.cardCount #even identical cards stat wise are unique
+        self.summoningSickness = True
+        self.attackedThisTurn = False
         def __repr__(self):
             return f'{self.name}: cost:{self.cost}, attack:{self.attack}, life:{self.life}'
 
@@ -31,11 +33,15 @@ class Card(object):
             outline = 'yellow'
         else:
             outline = 'black'
+        if self.summoningSickness:
+            costColor = 'green'
+        else:
+            costColor = 'blue'
         font = 'Helvetica ' + str(int(width * Card.fontSizeRatio))
         nameFont = 'Helvetica ' + str(int(width * Card.nameSizeRatio))
         canvas.create_rectangle(self.x - (width/2), self.y - (height/2), self.x + (width/2), self.y + (height/2),
                                 fill = color, outline = outline)
-        canvas.create_text(self.x - (width/2), self.y - (height/2), text = str(self.cost), font = font, fill = 'blue', anchor = 'nw')
+        canvas.create_text(self.x - (width/2), self.y - (height/2), text = str(self.cost), font = font, fill = costColor, anchor = 'nw')
         canvas.create_text(self.x, self.y - (3/8) * height, text = self.name, font  = nameFont)
         canvas.create_text(self.x - (width/4), self.y + (height/4), text = str(self.attack), font = font)
         canvas.create_text(self.x + (width/4), self.y + (height/4), text = str(self.curLife), font = font)
@@ -52,7 +58,8 @@ class Card(object):
         self.x = int(components[7])
         self.y = int(components[8])
         self.id = int(components[9])
-   
+        self.summoningSickness = (components[10] == 'True')
+        self.attackedThisTurn = (components[11] == 'True')
     def __repr__(self):
         string = ''
         for key in self.__dict__:

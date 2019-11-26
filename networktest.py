@@ -32,6 +32,9 @@ class Network:
         except socket.error as e:
             return str(e)
 
+    def end(self):
+        self.client.close()
+
 '''
 def sendData(toSend):
     print('sending Data')
