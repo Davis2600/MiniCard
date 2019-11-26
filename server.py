@@ -1,7 +1,9 @@
 import socket
 import sys
 from _thread import *
-
+from card import Card
+from player import Player
+from state import GameState
 #creating a default socket 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 print('we did it boys')
@@ -19,15 +21,24 @@ except socket.error as e:
 s.listen(5)
 print('we are listening')
 currId = '0'
-values = [1,2,3,4,5]
 
+#init the shared game state
+player0 = Player()
+player1 = Player()
 
+#TODO for now the decks will be set, customizable decks soon
+player0.makeBasicDeck()
+player1.makeBasicDeck()
 
 def threadedClient(c):
-    global currId, values
-    c.send(str.encode(currId))
+    global currId, player0, player1
+    if currId == '0':
+        currState = GameState(player0,player1)
+    else:
+        currState = GameState(player1,player0)
+    c.send(str.encode(currId,',',str(currState)))
     if currId == '1':
-        currId = '0'
+        c.close()
     else:
         currId = '1'
     reply = ''
@@ -42,11 +53,13 @@ def threadedClient(c):
                 break
             else:
                 print('Recieved ', reply)
-                stuff = reply.split(',')
-                index = stuff[0]
-                newVal = stuff[1]
-                values[int(index)] = int(newVal)
+                contents = reply.split(',')
+                playerNum = contents[0] #gets the ID
+                activeP = contents[1] #gets that clients player 1
+                passiveP = contents[2] #gets that clients player 2
 
+                #build the state from the strings
+                
                 if index == 0:
                     newIndex = 1
                 else:

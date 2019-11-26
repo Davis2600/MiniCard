@@ -81,16 +81,16 @@ class Player(object):
 
 
     def makeBasicDeck(self):
-        for i in range(5):
-            self.deck.append(Card('Newt', None, 1, (2,1), None))
-        for i in range(4):
-            self.deck.append(Card('Minion', None, 2, (3,3), None))
         for i in range(3):
-            self.deck.append(Card('Hound', None, 4, (5,2), None))
-        for i in range(4):
-            self.deck.append(Card('Beast', None, 6, (8,8), None))
-        for i in range(2):
-            self.deck.append(Card('Dragon', None, 10, (12,12), None))
+            self.deck.append(Card('Newt', 1, (2,1), None))
+        #for i in range(4):
+        #    self.deck.append(Card('Minion', 2, (3,3), None))
+        #for i in range(3):
+        #    self.deck.append(Card('Hound', 4, (5,2), None))
+        #for i in range(4):
+        #    self.deck.append(Card('Beast', 6, (8,8), None))
+        #for i in range(2):
+        #    self.deck.append(Card('Dragon', 10, (12,12), None))
             
     #reanamed to avoid confusion with draw methods
     def pickupCard(self):
@@ -140,6 +140,8 @@ class Player(object):
                 selection = card
                 break
         return selection
-    #TODO repr for online
+    
+    def __repr__(self):
+        return str([self.deck, self.hand, self.board])
 
 
