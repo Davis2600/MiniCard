@@ -77,6 +77,16 @@ class Game(Mode):
     
     def mousePressed(self, event):
         self.state.activePlayer.selectCard(event.x, event.y)
+        selection = self.state.activePlayer.getSelected()
+        if selection != None and selection in self.state.activePlayer.board:
+            taunt, activeTargets = self.tauntCheck()
+            if taunt:
+                self.state.activePlayer.message = f"an Opponents creature is taunting"
+            else:
+                self.state.activePlayer.message = f'Pick a Valid Target'
+            for card in self.state.opponent.board:
+                if card in activeTargets:
+                    card.target = True
         
     def keyPressed(self,event):
         if event.key == '0':
@@ -111,6 +121,7 @@ class Game(Mode):
         if selection != None:
             selection.x = event.x
             selection.y = event.y
+
     
     def mouseReleased(self, event):
         print('released')
@@ -127,9 +138,10 @@ class Game(Mode):
             self.sendData()
             return 
         if selection != None and selection in self.state.activePlayer.board:
-            pass
             self.attemptAttack(selection, event.x, event.y)
             selection.selected = False
+            for card in self.state.opponent.board:
+                card.target = False
             self.sendData()
             return 
         
@@ -151,34 +163,83 @@ class Game(Mode):
                 self.state.activePlayer.currMana -= selection.cost
                 self.state.activePlayer.hand.remove(selection)
                 self.state.activePlayer.board.append(selection)
-                self.state.activePlayer.message = f'Summoned {selection.name}'               
+                self.state.activePlayer.message = f'Summoned {selection.name}' 
+                if selection.effect == 'Rush':
+                    selection.summoningSickness = False
             else:
                 self.state.activePlayer.message = 'Insufficent Mana'
 
 
     def attemptAttack(self, selection, x , y):
-        if selection.summoningSickness or selection.attackedThisTurn:
+        if selection.summoningSickness:
+            self.state.activePlayer.message = f'{selection.name} has summoning sickness!'
+            return 
+        if selection.attackedThisTurn:
+            self.state.activePlayer.message = f'{selection.name} already attacked!!' 
             return
-        #first check if direct attack
-        if Game.checkInField(x, y, Player.enemyBoxDims):
+
+        #check if card attack
+        #taunt check
+        taunt = False 
+        validTargets = [] #list of valid tagets to attack 
+        taunt, validTargets = self.tauntCheck()
+        halfHeight, halfWidth = Player.cardWidth + 20, (Player.cardWidth / 2) + 20
+        for card in validTargets:
+            card.target = True
+        for enemyCard in validTargets:
+            bounds = enemyCard.x - halfWidth, enemyCard.y - halfHeight, \
+                     enemyCard.x + halfWidth, enemyCard.y + halfHeight
+            if Game.checkInField(x, y, bounds):
+                self.doAttack(selection, enemyCard)
+                
+                return 
+        #direct attack
+        if Game.checkInField(x, y, Player.enemyBoxDims) and not taunt:
             print('attacking opponent')
+            self.state.activePlayer.message = f'{selection.name} attacked the oposing hero for {selection.attack} damage'
+            self.state.opponent.message = f'We took {selection.attack} damage'
             selection.attackedThisTurn = True
             self.state.opponent.health -= selection.attack
             self.checkWin()
             return 
-        #check if card attack
-        halfHeight, halfWidth = Player.cardWidth + 20, (Player.cardWidth / 2) + 20
+
+    def doAttack(self, selection, target):
+        if selection.effect == 'Poison':
+            target.curLife = 0
+            selection.curLife -= target.attack
+        elif target.effect == 'Poison':
+            selection.curlife = 0
+            selection.curLife -= target.attack
+        elif selection.effect == 'QuickStrike':
+            target.curLife -= selection.attack
+            if target.curLife != 0:
+                selection.curLife -= target.attack
+        else:
+            target.curLife -= selection.attack
+            selection.curLife -= target.attack
+            if target.effect == 'DivineShield':
+                target.effect = None
+                target.curLife = target.maxLife
+            if selection.effect == 'DivineShield':
+                selection.effect = None
+                selection.curLife = selection.Maxlife
+
+        self.state.activePlayer.clearBoard()
+        self.state.opponent.clearBoard()
+        selection.attackedThisTurn = True
+
+
+    def tauntCheck(self):
+        validTargets = []
+        taunt = False
         for enemyCard in self.state.opponent.board:
-            bounds = enemyCard.x - halfWidth, enemyCard.y - halfHeight, \
-                     enemyCard.x + halfWidth, enemyCard.y + halfHeight
-            if Game.checkInField(x, y, bounds):
-                enemyCard.curLife -= selection.attack
-                selection.curLife -= enemyCard.attack
-                self.state.activePlayer.clearBoard()
-                self.state.opponent.clearBoard()
-                selection.attackedThisTurn = True
-                return 
-        
+            if enemyCard.effect == 'Taunt':
+                taunt = True
+                validTargets.append(enemyCard)
+        if validTargets == []:
+            validTargets = self.state.opponent.board
+        return taunt, validTargets
+
     def checkWin(self):
         if self.state.activePlayer.health <= 0:
             self.app.setActiveMode(self.app.loseMode)
@@ -207,7 +268,5 @@ class Game(Mode):
         canvas.create_text(self.width - 10, self.height, text = 'Press "Enter" to end your turn',
          anchor  = 'se', font = 'Helvetica 15', fill = 'black')
         
-
-
 
 app = ModalGame(width = 800, height = 800)
