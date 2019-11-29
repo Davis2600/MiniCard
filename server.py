@@ -9,7 +9,7 @@ s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 print('we did it boys')
 
 #default port
-port, server = 1234, 'localhost'
+port, server = 2345, 'localhost'
 serverIP = socket.gethostbyname(server)
 try:
     s.bind((server, port))   

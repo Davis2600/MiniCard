@@ -154,6 +154,7 @@ class Player(object):
         self.hand = Player.buildZoneFromString(components[7])
         self.board = Player.buildZoneFromString(components[8])
         self.discard = Player.buildZoneFromString(components[9])
+        
     @staticmethod
     def buildZoneFromString(string):
         if string == '':
