@@ -62,7 +62,7 @@ class Player(object):
                 card.drawCard(canvas, Player.cardWidth, 'red')
                 X += 150    
             canvas.create_rectangle(Player.enemyBoxDims[0], Player.enemyBoxDims[1], 
-                                     Player.enemyBoxDims[2], Player.enemyBoxDims[3], 
+                                     Player.enemyBoxDims[2], Player.enemyBoxDims[3],
                                      fill = 'red')
 
 
@@ -82,13 +82,15 @@ class Player(object):
 
     def makeBasicDeck(self):
         for i in range(3):
-            self.deck.append(Card('Newt', 1, (2,1), None))
+            self.deck.append(Card('Newt', 1, (2,1), 'Rush'))
         for i in range(4):
-            self.deck.append(Card('Minion', 2, (3,3), None))
+            self.deck.append(Card('Pally', 1, (2,2), 'DivineShield'))
+        for i in range(4):
+            self.deck.append(Card('Minion', 2, (3,3), 'Taunt'))
         for i in range(3):
-            self.deck.append(Card('Hound', 4, (5,2), None))
+            self.deck.append(Card('Hound', 2, (1,8), 'Poison'))
         for i in range(4):
-            self.deck.append(Card('Beast', 6, (8,8), None))
+            self.deck.append(Card('Beast', 4, (8,8), 'QuickStrike'))
         for i in range(2):
             self.deck.append(Card('Dragon', 10, (12,12), None))
             
@@ -199,5 +201,3 @@ class Player(object):
                str(self.message) + ';' + cards)
                
         return rep
-
-

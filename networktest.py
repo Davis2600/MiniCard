@@ -35,20 +35,3 @@ class Network:
     def end(self):
         self.client.close()
 
-'''
-def sendData(toSend):
-    print('sending Data')
-    data = str(network.id) + '|||' + str(toSend)
-    reply = network.send(data)
-    print('completed')
-    return reply
-
-network = Network()
-run = True
-number = 5
-while run:
-    number = input('Hello Friend, input a number')
-    print('input = ', number)
-    message = sendData(number)
-    print('the message = ', message)
-'''

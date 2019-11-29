@@ -24,28 +24,35 @@ class Card(object):
         self.id = self.cardCount #even identical cards stat wise are unique
         self.summoningSickness = True
         self.attackedThisTurn = False
+        self.target = False
         def __repr__(self):
             return f'{self.name}: cost:{self.cost}, attack:{self.attack}, life:{self.life}'
 
-    def drawCard(self, canvas, width, color):
+    def drawCard(self, canvas, width, fillColor):
         height = 2 * width
         if self.selected:
             outline = 'yellow'
+        elif self.target:
+            outline = 'light green'
         else:
             outline = 'black'
         if self.summoningSickness:
             costColor = 'green'
         else:
             costColor = 'blue'
+        if self.attackedThisTurn == True:
+            fillColor = 'Gray'
+        else:
+            fillColor = fillColor
         font = 'Helvetica ' + str(int(width * Card.fontSizeRatio))
         nameFont = 'Helvetica ' + str(int(width * Card.nameSizeRatio))
         canvas.create_rectangle(self.x - (width/2), self.y - (height/2), self.x + (width/2), self.y + (height/2),
-                                fill = color, outline = outline)
+                                fill = fillColor, outline = outline, width = 6)
         canvas.create_text(self.x - (width/2), self.y - (height/2), text = str(self.cost), font = font, fill = costColor, anchor = 'nw')
         canvas.create_text(self.x, self.y - (3/8) * height, text = self.name, font  = nameFont)
         canvas.create_text(self.x - (width/4), self.y + (height/4), text = str(self.attack), font = font)
         canvas.create_text(self.x + (width/4), self.y + (height/4), text = str(self.curLife), font = font)
-
+        canvas.create_text(self.x, self.y, text = self.effect, font = nameFont)
     def createCardFromString(self, string):
         components = string.split(':')
         self.name = components[0]
