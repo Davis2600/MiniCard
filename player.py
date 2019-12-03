@@ -22,6 +22,7 @@ class Player(object):
         self.board = []
         self.makeBasicDeck()
         self.message = '' #message to be displayed to the player at a given time
+        self.gameStarted = False
         random.shuffle(self.deck)
 
     def draw(self, canvas, width, height, side):
@@ -152,11 +153,17 @@ class Player(object):
         self.currMana = int(components[3])
         self.firstTurn = (components[4] == 'True')
         self.message = components[5]
-        self.deck = Player.buildZoneFromString(components[6])
-        self.hand = Player.buildZoneFromString(components[7])
-        self.board = Player.buildZoneFromString(components[8])
-        self.discard = Player.buildZoneFromString(components[9])
-        
+        self.gameStarted = components[6]
+        self.deck = Player.buildZoneFromString(components[7])
+        self.hand = Player.buildZoneFromString(components[8])
+        self.board = Player.buildZoneFromString(components[9])
+        self.discard = Player.buildZoneFromString(components[10])
+
+    def buildDeckFromString(self, string):
+        print('building deck from string', string)
+        self.deck = Player.buildZoneFromString(string)
+        print(self.deck)
+           
     @staticmethod
     def buildZoneFromString(string):
         if string == '':
@@ -198,6 +205,7 @@ class Player(object):
                str(self.mana) + ';' +
                str(self.currMana) + ';' +
                str(self.firstTurn) + ';' +
+               str(self.gameStarted) + ';' +
                str(self.message) + ';' + cards)
                
         return rep

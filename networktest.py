@@ -11,9 +11,10 @@ class Network:
         self.addr = (self.host, self.port)
         self.id = 'temp'
 
-    def connect(self):
+    def connect(self, deck):
         self.client.connect(self.addr)
         firstMessage = self.client.recv(4096).decode()
+        self.client.send(str.encode(deck))
         contents = firstMessage.split('|||')
         self.id = contents[0]
         player0 = Player()

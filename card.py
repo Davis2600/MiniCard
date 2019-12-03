@@ -53,7 +53,9 @@ class Card(object):
         canvas.create_text(self.x - (width/4), self.y + (height/4), text = str(self.attack), font = font)
         canvas.create_text(self.x + (width/4), self.y + (height/4), text = str(self.curLife), font = font)
         canvas.create_text(self.x, self.y, text = self.effect, font = nameFont)
+   
     def createCardFromString(self, string):
+        print(string)
         components = string.split(':')
         self.name = components[0]
         self.cost = int(components[1])
