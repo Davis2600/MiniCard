@@ -8,24 +8,35 @@ from card import Card
 from player import Player
 from state import GameState
 from deckimport import importDeck
+from button import Button
 
 class ModalGame(ModalApp):
     def appStarted(app):
-
+        app.deckString = ''
         app.titleScreenMode = TitleScreenMode()
         app.gameMode = Game()
         app.winMode = WinMode()
         app.loseMode = LoseMode()
         app.setActiveMode(app.titleScreenMode)
+        app.deckMode = DeckSelectMode()
 
 class TitleScreenMode(Mode):
+    def appStarted(mode):
+        mode.startButton = Button('Start', mode.width/2, mode.height/2, 200, 100, 'light green')
+        mode.deckButton = Button('Create/Edit Deck', mode.width/6, mode.height * 0.80, 200, 100, 'light blue')
+        
 
     def redrawAll(mode, canvas):
-        canvas.create_text(mode.width/2,mode.height/2, text = "MiniCards: Press Enter to Begin",
+        canvas.create_text(mode.width/2,mode.height/4, text = "MiniCards: Press Enter to Begin",
             font = "Helvetica 28")
+        mode.startButton.drawButton(canvas)
+        mode.deckButton.drawButton(canvas)
 
-    def keyPressed(mode, event):
-        mode.app.setActiveMode(mode.app.gameMode)
+    def mousePressed(mode, event):
+        if mode.startButton.checkClicked(event.x, event.y):
+            mode.app.setActiveMode(mode.app.gameMode)
+        elif mode.deckButton.checkClicked(event.x, event.y):
+            mode.app.setActiveMode(mode.app.deckMode)
 
 class WinMode(Mode):
 
@@ -44,6 +55,143 @@ class LoseMode(Mode):
 
     def keyPressed(mode, event):
         mode.app.setActiveMode(mode.app.gameMode)        
+
+class DeckSelectMode(Mode):
+    def appStarted(mode):
+        mode.possibleCards = []
+        mode.deck = []
+        cardListFile = importDeck('cardList.txt')
+        mode.possibleCards = DeckSelectMode.buildZoneFromString(cardListFile)
+        print(mode.possibleCards)
+        mode.scrollX = 0
+        mode.scrollButton = Button('Scroll Foreward', 700, 400, 150, 50, 'light green')
+        mode.scrollBackButton = Button('Scroll Backward', 100, 400, 150, 50, 'light green')
+        mode.scrollDist = 50
+        mode.selectedFromDeck = False
+        mode.scrollDeck = 0
+        mode.scrollButtonDeck = Button('Scroll Foreward', 700, 700, 150, 50, 'pink')
+        mode.scrollBackButtonDeck = Button('Scroll Backward', 100, 700, 150, 50, 'pink')
+
+    def mousePressed(mode, event):
+        if mode.scrollButton.checkClicked(event.x, event.y) and mode.scrollX < 1000:
+            mode.scrollX += mode.scrollDist
+        elif mode.scrollBackButton.checkClicked(event.x, event.y) and mode.scrollX > 0:
+            mode.scrollX -= mode.scrollDist
+        elif mode.scrollButtonDeck.checkClicked(event.x, event.y) and mode.scrollDeck < (len(mode.deck) * 100):
+            mode.scrollDeck += 50
+        elif mode.scrollBackButtonDeck.checkClicked(event.x, event.y) and mode.scrollDeck > 0:
+            mode.scrollDeck -= 50
+        else:
+            mode.selectCard(event.x, event.y)
+
+    #reused from player class
+    def selectCard(mode, x, y):
+        print(mode.possibleCards)
+        #remove current selection
+        for card in mode.possibleCards:
+            card.selected = False
+        for card in mode.deck:
+            card.selected = False
+        #make new selection 
+        halfWidth, halfHeight = 75, 150
+        for card in mode.possibleCards:
+            if card.x + halfWidth > x and card.x - halfWidth < x:
+                if card.y + halfHeight > y and card.y - halfHeight < y:
+                    print('SELECTED', card)
+                    card.selected = True
+                    mode.selectedFromDeck = False
+        for card in mode.deck:
+            if card.x + halfWidth > x and card.x - halfWidth < x:
+                if card.y + halfHeight > y and card.y - halfHeight < y:
+                    print('SELECTED', card)
+                    card.selected = True  
+                    mode.selectedFromDeck = True
+
+    #modified from the player class
+    def getSelected(mode):
+        selection = None
+        for card in mode.possibleCards:
+            if card.selected == True:
+                selection = card
+                break
+        for card in mode.deck:
+            if card.selected == True:
+                selection = card
+                break
+        return selection
+
+    #modified from gameMode
+    def mouseDragged(mode, event):
+        selection = mode.getSelected()
+        if selection != None:
+            selection.x = event.x
+            selection.y = event.y
+    def mouseReleased(mode,event):
+        selection = mode.getSelected()
+        if selection != None:
+            if selection.y > 400 and mode.selectedFromDeck == False:
+                selection.selected = False
+                selectionStr = str(selection)
+                newCard = Card()
+                newCard.createCardFromString(selectionStr)
+                mode.deck.append(newCard)
+                print(mode.deck)
+            elif selection.y < 400 and mode.selectedFromDeck == True:
+                mode.deck.remove(selection)
+            else:
+                selection.selected = False
+
+    #reused from player class
+    def drawCards(mode, canvas, height, width, scroll, cards):
+        X, Y = 75, height
+
+        for card in cards:
+            if not card.selected:
+                card.x = X - scroll
+                card.y = Y
+            card.drawCard(canvas, width, 'light blue')
+            X += width
+
+    #reused from player class
+    @staticmethod
+    def buildZoneFromString(string):
+        if string == '':
+            return []
+        zoneString = string.split(',')
+        zoneList = []
+        for cardString in zoneString:
+            card = Card()
+            card.createCardFromString(cardString)
+            zoneList.append(card)
+        return zoneList
+    def redrawAll(mode, canvas):
+        canvas.create_text(10,10, text = 'Deck Buider', font = 'Helvetica 20', anchor = 'nw')
+        mode.drawCards(canvas, 200, 150, mode.scrollX, mode.possibleCards)
+        mode.drawCards(canvas, 600, 100, mode.scrollDeck, mode.deck)
+        mode.scrollButton.drawButton(canvas)
+        mode.scrollBackButton.drawButton(canvas)
+        mode.scrollButtonDeck.drawButton(canvas)
+        mode.scrollBackButtonDeck.drawButton(canvas)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 class Game(Mode):
     def appStarted(self):

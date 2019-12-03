@@ -1,0 +1,11 @@
+Newt:1:2:1:1:Rush:False:-1:-1:1:True:False:False:
+Pally:1:2:2:2:DivineShield:False:-1:-1:2:True:False:False:
+Minion:2:3:3:3:Taunt:False:-1:-1:3:True:False:False:
+Hound:4:3:5:5:None:False:-1:-1:4:True:False:False:
+Beast:4:6:6:8:QuickStrike:False:-1:-1:5:True:False:False:
+Dragon:9:12:12:12:None:False:-1:-1:6:True:False:False:
+Witch:3:6:1:1:Poison:False:-1:-1:5:True:False:False:
+Troll:1:0:3:3:Taunt:False:-1:-1:1:True:False:False:
+Lion:6:6:6:6:QuickStrike:False:-1:-1:1:True:False:False:
+Lancer:1:2:1:1:QuickStrike:False:-1:-1:1:True:False:False:
+Wizard:1:1:1:1:OnSummon:False:-1:-1:1:True:False:False:

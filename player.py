@@ -114,8 +114,6 @@ class Player(object):
             self.message = removeString
 
     def selectCard(self, x, y):
-        #recall past selection 
-        pastSelection = self.getSelected()
         #remove current selection
         for card in self.hand:
             card.selected = False

@@ -1,7 +1,5 @@
 from card import Card
 
-
-#1 card per line
 def importDeck(filename):
     deckList = open(filename)
     text = deckList.read()
@@ -10,6 +8,7 @@ def importDeck(filename):
     deckStr = ''
     for line in lines:
         try:
+            print(line)
             newcard = Card()
             newcard.createCardFromString(line)
             deck.append(newcard)
@@ -19,7 +18,7 @@ def importDeck(filename):
                 
 
         except:
-            raise Exception('Invalid Deck Format')
+            raise Exception('Invalid Deck Format on line:', line)
     deckStr = deckStr[0:-1]
     return deckStr
 

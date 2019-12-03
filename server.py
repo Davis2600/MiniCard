@@ -47,6 +47,8 @@ def startGame(player0, player1):
     
     player0.gameStarted = True
     player1.gameStarted = True
+    random.shuffle(player0.deck)
+    random.shuffle(player1.deck)
 
 def threadedClient(c):
     global currId, player0, player1
