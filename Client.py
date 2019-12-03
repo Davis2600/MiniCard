@@ -7,6 +7,7 @@ import random
 from card import Card
 from player import Player
 from state import GameState
+from deckimport import importDeck
 
 class ModalGame(ModalApp):
     def appStarted(app):
@@ -46,16 +47,20 @@ class LoseMode(Mode):
 
 class Game(Mode):
     def appStarted(self):
+        deck = importDeck('deckOne.txt')
         self.network = Network()
         
         #activePlayer = Player()
         #TODO for now, the opponent is also a player created in the client, it should eventually recieve from server
         #opponent = Player()
         #opponent.currentPlayer = False
-        self.state = self.network.connect()
+        print(deck)
+        self.state = self.network.connect(deck)
+        
         #self.startGame()
         self.timePassed = 0
         self.state.activePlayer.firstTurn = False # first turn prevents gaining extra mana on first turn, only effects p2
+        
 
     def sendData(self, passive = False):
         print('sending Data')
@@ -103,6 +108,7 @@ class Game(Mode):
 
     def swapTurns(self):
             self.state.activePlayer.message = 'Turn Over'
+            self.state.opponent.message = 'Turn Started!'
             self.state.activePlayer.currentPlayer = False 
             self.state.opponent.currentPlayer = True
             activePlayers = self.state.activePlayer, self.state.opponent
@@ -164,6 +170,7 @@ class Game(Mode):
                 self.state.activePlayer.hand.remove(selection)
                 self.state.activePlayer.board.append(selection)
                 self.state.activePlayer.message = f'Summoned {selection.name}' 
+                self.state.opponent.message = f'Opponent summoned {selection.name}'
                 if selection.effect == 'Rush':
                     selection.summoningSickness = False
             else:
@@ -215,6 +222,9 @@ class Game(Mode):
             if target.curLife != 0:
                 selection.curLife -= target.attack
         else:
+            if target.effect != 'DivineShield':
+                self.state.activePlayer.message = f'{selection.name} attacked the oposing {target.name} for {selection.attack} damage'
+                self.state.opponent.message = f'{target.name} took {selection.attack} damage'
             target.curLife -= selection.attack
             selection.curLife -= target.attack
             if target.effect == 'DivineShield':
