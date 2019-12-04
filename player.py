@@ -31,7 +31,7 @@ class Player(object):
         self.drawBoard(canvas, side)
         self.drawHud(canvas, width, height, side)
         #Draw Deck
-        canvas.create_rectangle(675, 575, 775, 725, fill = 'light blue')
+        canvas.create_rectangle(675, 575, 775, 725, fill = 'cyan')
         canvas.create_text(720, 630, text = f'{len(self.deck)}')
 
     def drawHand(self, canvas, side):
@@ -41,7 +41,7 @@ class Player(object):
                 if not card.selected:
                     card.x = X
                     card.y = Y
-                card.drawCard(canvas, Player.cardWidth, 'light blue')
+                card.drawCard(canvas, Player.cardWidth, 'cyan')
                 X += 100
         
     
@@ -52,7 +52,7 @@ class Player(object):
                 if not card.selected:
                     card.x = X
                     card.y = Y
-                card.drawCard(canvas, Player.cardWidth, 'light blue')
+                card.drawCard(canvas, Player.cardWidth, 'cyan')
                 X += 150    
         X, Y = 100, 200 
         if side == 1: # opponent
@@ -60,7 +60,7 @@ class Player(object):
                 if not card.selected:
                     card.x = X
                     card.y = Y
-                card.drawCard(canvas, Player.cardWidth, 'red')
+                card.drawCard(canvas, Player.cardWidth, 'magenta')
                 X += 150    
             canvas.create_rectangle(Player.enemyBoxDims[0], Player.enemyBoxDims[1], 
                                      Player.enemyBoxDims[2], Player.enemyBoxDims[3],

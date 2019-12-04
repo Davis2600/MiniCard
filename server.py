@@ -66,7 +66,7 @@ def threadedClient(c):
         player0.buildDeckFromString(deck0Str)
         player0.message = 'waiting for player'
         currState = GameState(player0, player1)
-    else:
+    elif currId == '1':
         currState = GameState(player1, player0)
         c.send(str.encode(currId + '|||' + str(currState)))
         deck1Str = c.recv(4096).decode()
@@ -75,7 +75,6 @@ def threadedClient(c):
         print('DECK 1 RECIEVED')
         print(deck1Str)        
         startGame(player0, player1)
-
     reply = ''
     running = True
     while running:
