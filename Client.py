@@ -13,6 +13,8 @@ from button import Button
 class ModalGame(ModalApp):
     def appStarted(app):
         app.deckString = ''
+        backgroundImageUrl = 'https://i.imgur.com/oWKMdMj.png'
+        app.backgroundImage = app.loadImage(backgroundImageUrl)
         app.titleScreenMode = TitleScreenMode()
         app.gameMode = Game()
         app.winMode = WinMode()
@@ -20,18 +22,27 @@ class ModalGame(ModalApp):
         app.setActiveMode(app.titleScreenMode)
         app.deckMode = DeckSelectMode()
 
+    #cited from https://www.cs.cmu.edu/~112/notes/notes-animations-part2.html
+    def getCachedPhotoImage(app, image):
+        # stores a cached version of the PhotoImage in the PIL/Pillow image
+        if ('cachedPhotoImage' not in image.__dict__):
+            image.cachedPhotoImage = ImageTk.PhotoImage(image)
+        return image.cachedPhotoImage
+
 class TitleScreenMode(Mode):
     def appStarted(mode):
-        mode.startButton = Button('Start', mode.width/2, mode.height/2, 200, 100, 'light green')
-        mode.deckButton = Button('Create/Edit Deck', mode.width/6, mode.height * 0.80, 200, 100, 'light blue')
+        mode.startButton = Button('Start', mode.width/2, mode.height/2, 200, 100, 'tan')
+        mode.deckButton = Button('Create/Edit Deck', mode.width/6, mode.height * 0.80, 200, 100, 'brown')
+        
         
 
     def redrawAll(mode, canvas):
+        canvas.create_image(mode.width/2, mode.height/2, image = mode.app.getCachedPhotoImage(mode.app.backgroundImage))
         canvas.create_text(mode.width/2,mode.height/4, text = "MiniCards: Press Enter to Begin",
-            font = "Helvetica 28")
+            font = "Papyrus 40")
         mode.startButton.drawButton(canvas)
         mode.deckButton.drawButton(canvas)
-
+        
     def mousePressed(mode, event):
         if mode.startButton.checkClicked(event.x, event.y):
             mode.app.setActiveMode(mode.app.gameMode)
@@ -64,16 +75,18 @@ class DeckSelectMode(Mode):
         mode.possibleCards = DeckSelectMode.buildZoneFromString(cardListFile)
         print(mode.possibleCards)
         mode.scrollX = 0
-        mode.scrollButton = Button('Scroll Foreward', 700, 400, 150, 50, 'light green')
-        mode.scrollBackButton = Button('Scroll Backward', 100, 400, 150, 50, 'light green')
+        mode.scrollButton = Button('Scroll Foreward', 700, 400, 150, 50, 'tan')
+        mode.scrollBackButton = Button('Scroll Backward', 100, 400, 150, 50, 'tan')
         mode.scrollDist = 50
         mode.selectedFromDeck = False
         mode.scrollDeck = 0
-        mode.scrollButtonDeck = Button('Scroll Foreward', 700, 700, 150, 50, 'pink')
-        mode.scrollBackButtonDeck = Button('Scroll Backward', 100, 700, 150, 50, 'pink')
+        mode.scrollButtonDeck = Button('Scroll Foreward', 700, 700, 150, 50, 'brown')
+        mode.scrollBackButtonDeck = Button('Scroll Backward', 100, 700, 150, 50, 'brown')
         mode.createDeckButton = Button('Export Deck', 400, 750, 120, 50, 'yellow' )
         mode.backButton = Button('Back', 600, 750, 100, 50, 'red')
         mode.message = ''
+        backgroundImageUrl = 'https://i.imgur.com/oWKMdMj.png'
+        mode.backgroundImage = mode.loadImage(backgroundImageUrl)
 
     def mousePressed(mode, event):
         if mode.scrollButton.checkClicked(event.x, event.y) and mode.scrollX < 1000:
@@ -191,6 +204,7 @@ class DeckSelectMode(Mode):
         return zoneList
 
     def redrawAll(mode, canvas):
+        canvas.create_image(mode.width/2, mode.height/2, image = mode.app.getCachedPhotoImage(mode.app.backgroundImage))
         canvas.create_text(10,10, text = 'Deck Buider', font = 'Helvetica 20', anchor = 'nw')
         mode.drawCards(canvas, 200, 150, mode.scrollX, mode.possibleCards)
         mode.drawCards(canvas, 600, 100, mode.scrollDeck, mode.deck)
@@ -199,7 +213,7 @@ class DeckSelectMode(Mode):
         mode.scrollButtonDeck.drawButton(canvas)
         mode.scrollBackButtonDeck.drawButton(canvas)
         mode.createDeckButton.drawButton(canvas)
-        canvas.create_text(mode.width/2,mode.height/2, text = f'{len(mode.deck)} / 20')
+        canvas.create_text(mode.width/2,mode.height/2, text = f'{len(mode.deck)} / 20 Cards')
         mode.backButton.drawButton(canvas)
         canvas.create_text(mode.width - 20, 0, text = mode.message, font = 'Helevetica 20', anchor = 'ne', fill = 'red')
 
@@ -469,6 +483,7 @@ class Game(Mode):
             return
         if not self.connected or not self.deckSelected:
             return
+        canvas.create_image(self.width/2, self.height/2, image = self.app.getCachedPhotoImage(self.app.backgroundImage))
         #canvas.create_rectangle(100, 0, 700, 500, fill = 'light blue')
         if self.state.activePlayer.currentPlayer == True:
             canvas.create_rectangle(0,0,self.width,self.height, width = 20, outline = 'green')
