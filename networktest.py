@@ -7,7 +7,7 @@ class Network:
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.host = 'localhost'
         #change this when using on other computers
-        self.port = 2345
+        self.port = 1234
         self.addr = (self.host, self.port)
         self.id = 'temp'
 

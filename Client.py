@@ -71,6 +71,9 @@ class DeckSelectMode(Mode):
         mode.scrollDeck = 0
         mode.scrollButtonDeck = Button('Scroll Foreward', 700, 700, 150, 50, 'pink')
         mode.scrollBackButtonDeck = Button('Scroll Backward', 100, 700, 150, 50, 'pink')
+        mode.createDeckButton = Button('Export Deck', 400, 750, 120, 50, 'yellow' )
+        mode.backButton = Button('Back', 600, 750, 100, 50, 'red')
+        mode.message = ''
 
     def mousePressed(mode, event):
         if mode.scrollButton.checkClicked(event.x, event.y) and mode.scrollX < 1000:
@@ -81,6 +84,13 @@ class DeckSelectMode(Mode):
             mode.scrollDeck += 50
         elif mode.scrollBackButtonDeck.checkClicked(event.x, event.y) and mode.scrollDeck > 0:
             mode.scrollDeck -= 50
+        elif mode.createDeckButton.checkClicked(event.x, event.y): 
+            if len(mode.deck) != 20:
+                mode.message = 'Decks Must be 20 Cards Long!'
+            else:
+                mode.exportDeck()
+        elif mode.backButton.checkClicked(event.x, event.y):
+            mode.app.setActiveMode(mode.app.titleScreenMode)
         else:
             mode.selectCard(event.x, event.y)
 
@@ -130,14 +140,20 @@ class DeckSelectMode(Mode):
         selection = mode.getSelected()
         if selection != None:
             if selection.y > 400 and mode.selectedFromDeck == False:
-                selection.selected = False
-                selectionStr = str(selection)
-                newCard = Card()
-                newCard.createCardFromString(selectionStr)
-                mode.deck.append(newCard)
-                print(mode.deck)
+                if len(mode.deck) < 20:
+                    selection.selected = False
+                    selectionStr = str(selection)
+                    newCard = Card()
+                    newCard.createCardFromString(selectionStr)
+                    mode.deck.append(newCard)
+                    print(mode.deck)
+                    mode.message = f'{selection.name} added to deck'
+                else:
+                    mode.message = 'Deck is Full'
+                    selection.selected = False
             elif selection.y < 400 and mode.selectedFromDeck == True:
                 mode.deck.remove(selection)
+                mode.message = f'{selection.name} removed from deck'
             else:
                 selection.selected = False
 
@@ -152,6 +168,15 @@ class DeckSelectMode(Mode):
             card.drawCard(canvas, width, 'light blue')
             X += width
 
+    def exportDeck(mode):
+        deckName = mode.getUserInput('Please Enter Deck Name')
+        newDeckFile = open(deckName, 'w+')
+        for card in mode.deck[0:-1]:
+            newDeckFile.write(str(card) + '\n')
+        newDeckFile.write(str(mode.deck[-1]))
+        newDeckFile.close()
+        mode.message = f'Created Deck file {deckName}.txt'
+
     #reused from player class
     @staticmethod
     def buildZoneFromString(string):
@@ -164,6 +189,7 @@ class DeckSelectMode(Mode):
             card.createCardFromString(cardString)
             zoneList.append(card)
         return zoneList
+
     def redrawAll(mode, canvas):
         canvas.create_text(10,10, text = 'Deck Buider', font = 'Helvetica 20', anchor = 'nw')
         mode.drawCards(canvas, 200, 150, mode.scrollX, mode.possibleCards)
@@ -172,43 +198,39 @@ class DeckSelectMode(Mode):
         mode.scrollBackButton.drawButton(canvas)
         mode.scrollButtonDeck.drawButton(canvas)
         mode.scrollBackButtonDeck.drawButton(canvas)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        mode.createDeckButton.drawButton(canvas)
+        canvas.create_text(mode.width/2,mode.height/2, text = f'{len(mode.deck)} / 20')
+        mode.backButton.drawButton(canvas)
+        canvas.create_text(mode.width - 20, 0, text = mode.message, font = 'Helevetica 20', anchor = 'ne', fill = 'red')
 
 
 class Game(Mode):
     def appStarted(self):
-        deck = importDeck('deckOne.txt')
-        self.network = Network()
-        
-        #activePlayer = Player()
-        #TODO for now, the opponent is also a player created in the client, it should eventually recieve from server
-        #opponent = Player()
-        #opponent.currentPlayer = False
-        print(deck)
-        self.state = self.network.connect(deck)
-        
-        #self.startGame()
         self.timePassed = 0
-        self.state.activePlayer.firstTurn = False # first turn prevents gaining extra mana on first turn, only effects p2
-        
+        deck = None
+        self.network = None 
+        self.network = Network()
+        self.serverIssue = False
+        print(deck)
+        self.state = None
+        self.deckSelected = False
+        self.connected = False
+        while deck == None:
+            try:
+                deckList = self.getUserInput('Enter the deck file name (.txt)')
+                deck = importDeck(deckList)
+                self.deckSelected = True
+            except:
+                deck = None
+        try:
+            self.state = self.network.connect(deck)
+            self.connected = True
+        except:
+            self.serverIssue = True
+        #self.startGame()
+        if self.deckSelected and self.connected:
+            self.state.activePlayer.firstTurn = False 
+
 
     def sendData(self, passive = False):
         print('sending Data')
@@ -218,9 +240,16 @@ class Game(Mode):
             data = self.network.id + '*'
         reply = self.network.send(data)
         print('completed')
+        if reply == None:
+            self.serverIssue = True
+            return
         components = reply.split('|||')
-        activeP = components[0]
-        passiveP = components[1]
+        try:
+            activeP = components[0]
+            passiveP = components[1]
+        except:
+            self.serverIssue = True
+            return
         self.state.activePlayer.buildPlayerFromString(activeP)
         self.state.opponent.buildPlayerFromString(passiveP)
         print(type(self.state))
@@ -229,6 +258,8 @@ class Game(Mode):
 
     
     def mousePressed(self, event):
+        if not self.connected or not self.deckSelected:
+            return
         self.state.activePlayer.selectCard(event.x, event.y)
         selection = self.state.activePlayer.getSelected()
         if selection != None and selection in self.state.activePlayer.board:
@@ -242,6 +273,10 @@ class Game(Mode):
                     card.target = True
         
     def keyPressed(self,event):
+        if self.serverIssue and event.key == 'Enter':
+            self.app.setActiveMode(self.app.titleScreenMode)
+            self.serverIssue = False
+            return
         if event.key == '0':
             print('switching sides')
             self.state.activePlayer, self.state.opponent = self.state.opponent, self.state.activePlayer
@@ -271,6 +306,8 @@ class Game(Mode):
                         activePlayer.currMana = activePlayer.mana
 
     def mouseDragged(self, event):
+        if not self.connected or not self.deckSelected:
+            return
         selection = self.state.activePlayer.getSelected()
         if selection != None:
             selection.x = event.x
@@ -278,6 +315,8 @@ class Game(Mode):
 
     
     def mouseReleased(self, event):
+        if not self.connected or not self.deckSelected:
+            return
         print('released')
         #if selection in hand, try to summon 
         selection = self.state.activePlayer.getSelected()
@@ -300,6 +339,8 @@ class Game(Mode):
             return 
         
     def timerFired(self):
+        if not self.connected or not self.deckSelected:
+            return
         self.timePassed += 1
         if self.timePassed == 10:
             if self.state.activePlayer.currentPlayer == False:
@@ -313,7 +354,10 @@ class Game(Mode):
         bottomMargin = self.height - 200
         if Game.checkInField(x, y, (leftMargin, 0, rightMargin, bottomMargin)):
             print('released in field')
-            if self.state.activePlayer.currMana >= selection.cost and len(self.state.activePlayer.board) < 6:
+            if self.state.activePlayer.currMana >= selection.cost and len(self.state.activePlayer.board) < 7:
+                if len(self.state.activePlayer.board) == 6:
+                    self.state.activePlayer.message = 'You cannot summon more than 6 monsters'
+                    return
                 self.state.activePlayer.currMana -= selection.cost
                 self.state.activePlayer.hand.remove(selection)
                 self.state.activePlayer.board.append(selection)
@@ -321,6 +365,8 @@ class Game(Mode):
                 self.state.opponent.message = f'Opponent summoned {selection.name}'
                 if selection.effect == 'Rush':
                     selection.summoningSickness = False
+                if selection.effect == 'Companion':
+                    self.state.activePlayer.board.append(Card('Mummy', 0, (3,1), None))
             else:
                 self.state.activePlayer.message = 'Insufficent Mana'
 
@@ -362,9 +408,10 @@ class Game(Mode):
         if selection.effect == 'Poison':
             target.curLife = 0
             selection.curLife -= target.attack
-        elif target.effect == 'Poison':
-            selection.curlife = 0
             selection.curLife -= target.attack
+        elif target.effect == 'Poison':
+            selection.curLife = 0
+            target.curLife -= selection.attack
         elif selection.effect == 'QuickStrike':
             target.curLife -= selection.attack
             if target.curLife != 0:
@@ -380,7 +427,7 @@ class Game(Mode):
                 target.curLife = target.maxLife
             if selection.effect == 'DivineShield':
                 selection.effect = None
-                selection.curLife = selection.Maxlife
+                selection.curLife = selection.maxLife
 
         self.state.activePlayer.clearBoard()
         self.state.opponent.clearBoard()
@@ -416,6 +463,12 @@ class Game(Mode):
         
 
     def redrawAll(self, canvas):
+        if self.serverIssue:
+            canvas.create_text(self.width/2,self.height/2, text = 'SERVER ISSUE: press enter to return to title.',
+                        font = 'Helvetica 30', fill = 'red')
+            return
+        if not self.connected or not self.deckSelected:
+            return
         #canvas.create_rectangle(100, 0, 700, 500, fill = 'light blue')
         if self.state.activePlayer.currentPlayer == True:
             canvas.create_rectangle(0,0,self.width,self.height, width = 20, outline = 'green')

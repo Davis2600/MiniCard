@@ -10,7 +10,7 @@ s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 print('we did it boys')
 
 #default port
-port, server = 2345, 'localhost'
+port, server = 1234, 'localhost'
 serverIP = socket.gethostbyname(server)
 try:
     s.bind((server, port))   
@@ -29,6 +29,7 @@ player0.currentPlayer = False
 player1.currentPlayer = False
 deck0Str = ''
 deck1Str = ''
+finishedIDs = []
 #init the shared game 
 def startGame(player0, player1):
     print('Starting Game')
@@ -39,6 +40,8 @@ def startGame(player0, player1):
     else:
         player0.currentPlayer = True
         player0.firstTurn = False
+    random.shuffle(player0.deck)
+    random.shuffle(player1.deck)
 
 
     for i in range(5):
@@ -47,11 +50,9 @@ def startGame(player0, player1):
     
     player0.gameStarted = True
     player1.gameStarted = True
-    random.shuffle(player0.deck)
-    random.shuffle(player1.deck)
 
 def threadedClient(c):
-    global currId, player0, player1
+    global currId, player0, player1, finishedIDs
     theID = currId
 
     
@@ -126,6 +127,17 @@ def threadedClient(c):
 
 
     print('connection finishied', theID)
+    #resets server when both parties disconect
+    finishedIDs.append(theID)
+    if len(finishedIDs) == 2:
+        print('RESET')
+        currId = '0'
+        player0 = Player()
+        player1 = Player()
+        player0.currentPlayer = False
+        player1.currentPlayer = False
+        deck0Str = ''
+        deck1Str = ''
     c.close()
 
 

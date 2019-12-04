@@ -8,4 +8,4 @@ Witch:3:6:1:1:Poison:False:-1:-1:5:True:False:False:
 Troll:1:0:3:3:Taunt:False:-1:-1:1:True:False:False:
 Lion:6:6:6:6:QuickStrike:False:-1:-1:1:True:False:False:
 Lancer:1:2:1:1:QuickStrike:False:-1:-1:1:True:False:False:
-Wizard:1:1:1:1:OnSummon:False:-1:-1:1:True:False:False:
+Wizard:1:1:1:1:Companion:False:-1:-1:1:True:False:False:
