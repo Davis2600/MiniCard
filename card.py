@@ -36,7 +36,10 @@ class Card(object):
         nameImg = getCustomFontText(str(self.name), nameFontSize, color)
         statImg = getCustomFontText(str(self.attack) + '      ' + str(self.curLife), fontSize, color)
         effectImg = getCustomFontText(self.effect, nameFontSize, color)
-        costImg = getCustomFontText(str(self.cost), fontSize, color)
+        costColor = color
+        if self.summoningSickness:
+            costColor = 'Green'
+        costImg = getCustomFontText(str(self.cost), fontSize, costColor)
         return nameImg, statImg, effectImg, costImg
     def drawCard(self, canvas, width, outline):
         text = self.getCardImages(width, outline)

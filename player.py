@@ -5,7 +5,7 @@ from tkinter import *
 from cmu_112_graphics import *
 import random
 from card import Card
-
+from utilities import *
 class Player(object):
     enemyBoxDims = 300, 0, 600, 100
     manaMax = 10  
@@ -31,8 +31,12 @@ class Player(object):
         self.drawBoard(canvas, side)
         self.drawHud(canvas, width, height, side)
         #Draw Deck
-        canvas.create_rectangle(675, 575, 775, 725, fill = 'cyan')
-        canvas.create_text(720, 630, text = f'{len(self.deck)}')
+        canvas.create_rectangle(675, 575, 775, 725, fill = 'black', outline = 'cyan', width = 6)
+        #TODO update
+        deckTextTop = getCustomFontText('Deck:', 30, 'cyan')
+        deckTextBottom = getCustomFontText(str(len(self.deck)), 30, 'cyan')
+        canvas.create_image(720, 600, image = getCachedPhotoImage(deckTextTop))
+        canvas.create_image(720, 630, image = getCachedPhotoImage(deckTextBottom))
 
     def drawHand(self, canvas, side):
         X, Y = 100, 725
@@ -69,7 +73,9 @@ class Player(object):
 
     def drawHud(self, canvas, width, height, side):
         if side == 0:
-            canvas.create_text(0, 0, text = self.message, font = 'Helvetica 25', anchor = 'nw')
+            messageText = getCustomFontText(self.message, 25, 'cyan')
+        
+            canvas.create_image(25, 575, image = getCachedPhotoImage(messageText), anchor = 'nw')
             canvas.create_text(5, width, anchor = 'sw', text = str(self.currMana), font = 'Helvetica 30', 
                            fill = 'blue')
             canvas.create_text(5, height - 30, anchor = 'sw', text = str(self.health), font = 'Helvetica 30', 

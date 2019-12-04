@@ -87,6 +87,8 @@ class DeckSelectMode(Mode):
         mode.message = ''
         backgroundImageUrl = 'https://i.imgur.com/oWKMdMj.png'
         mode.backgroundImage = mode.loadImage(backgroundImageUrl)
+        for card in mode.possibleCards:
+            card.summoningSickness = False
 
     def mousePressed(mode, event):
         if mode.scrollButton.checkClicked(event.x, event.y) and mode.scrollX < 1000:
@@ -178,7 +180,7 @@ class DeckSelectMode(Mode):
             if not card.selected:
                 card.x = X - scroll
                 card.y = Y
-            card.drawCard(canvas, width, 'black')
+            card.drawCard(canvas, width, 'cyan')
             X += width
 
     def exportDeck(mode):
@@ -213,7 +215,7 @@ class DeckSelectMode(Mode):
         mode.scrollButtonDeck.drawButton(canvas)
         mode.scrollBackButtonDeck.drawButton(canvas)
         mode.createDeckButton.drawButton(canvas)
-        canvas.create_text(mode.width/2,mode.height/2, text = f'{len(mode.deck)} / 20 Cards')
+        canvas.create_text(mode.width/2,mode.height/2, text = f'{len(mode.deck)} / 20 Cards', fill = 'black')
         mode.backButton.drawButton(canvas)
         canvas.create_text(mode.width - 20, 0, text = mode.message, font = 'Helevetica 20', anchor = 'ne', fill = 'red')
 
@@ -285,9 +287,9 @@ class Game(Mode):
         if selection != None and selection in self.state.activePlayer.board:
             taunt, activeTargets = self.tauntCheck()
             if taunt:
-                self.state.activePlayer.message = f"an Opponents creature is taunting"
+                self.state.activePlayer.message = f"an    Opponents   creature   is   taunting"
             else:
-                self.state.activePlayer.message = f'Pick a Valid Target'
+                self.state.activePlayer.message = f'Pick   a   Valid   Target'
             for card in self.state.opponent.board:
                 if card in activeTargets:
                     card.target = True
@@ -310,8 +312,8 @@ class Game(Mode):
 
 
     def swapTurns(self):
-            self.state.activePlayer.message = 'Turn Over'
-            self.state.opponent.message = 'Turn Started!'
+            self.state.activePlayer.message = 'Turn   Over'
+            self.state.opponent.message = 'Turn   Started!'
             self.state.activePlayer.currentPlayer = False 
             self.state.opponent.currentPlayer = True
             activePlayers = self.state.activePlayer, self.state.opponent
@@ -376,27 +378,27 @@ class Game(Mode):
             print('released in field')
             if self.state.activePlayer.currMana >= selection.cost and len(self.state.activePlayer.board) < 7:
                 if len(self.state.activePlayer.board) == 6:
-                    self.state.activePlayer.message = 'You cannot summon more than 6 monsters'
+                    self.state.activePlayer.message = 'You   cannot   summon   more   than   6   monsters'
                     return
                 self.state.activePlayer.currMana -= selection.cost
                 self.state.activePlayer.hand.remove(selection)
                 self.state.activePlayer.board.append(selection)
-                self.state.activePlayer.message = f'Summoned {selection.name}' 
-                self.state.opponent.message = f'Opponent summoned {selection.name}'
+                self.state.activePlayer.message = f'Summoned   {selection.name}' 
+                self.state.opponent.message = f'Opponent   summoned   {selection.name}'
                 if selection.effect == 'Rush':
                     selection.summoningSickness = False
                 if selection.effect == 'Companion':
                     self.state.activePlayer.board.append(Card('Mummy', 0, (3,1), None))
             else:
-                self.state.activePlayer.message = 'Insufficent Mana'
+                self.state.activePlayer.message = 'Insufficent   Mana'
 
 
     def attemptAttack(self, selection, x , y):
         if selection.summoningSickness:
-            self.state.activePlayer.message = f'{selection.name} has summoning sickness!'
+            self.state.activePlayer.message = f'{selection.name}   has   summoning   sickness!'
             return 
         if selection.attackedThisTurn:
-            self.state.activePlayer.message = f'{selection.name} already attacked!!' 
+            self.state.activePlayer.message = f'{selection.name}   already   attacked!!' 
             return
 
         #check if card attack
@@ -417,8 +419,8 @@ class Game(Mode):
         #direct attack
         if Game.checkInField(x, y, Player.enemyBoxDims) and not taunt:
             print('attacking opponent')
-            self.state.activePlayer.message = f'{selection.name} attacked the oposing hero for {selection.attack} damage'
-            self.state.opponent.message = f'We took {selection.attack} damage'
+            self.state.activePlayer.message = f'{selection.name}   attacked   the   oposing   hero   for   {selection.attack}   damage'
+            self.state.opponent.message = f'We  took   {selection.attack}   damage'
             selection.attackedThisTurn = True
             self.state.opponent.health -= selection.attack
             self.checkWin()
@@ -438,8 +440,8 @@ class Game(Mode):
                 selection.curLife -= target.attack
         else:
             if target.effect != 'DivineShield':
-                self.state.activePlayer.message = f'{selection.name} attacked the oposing {target.name} for {selection.attack} damage'
-                self.state.opponent.message = f'{target.name} took {selection.attack} damage'
+                self.state.activePlayer.message = f'{selection.name}   attacked   the   oposing   {target.name}   for   {selection.attack}   damage'
+                self.state.opponent.message = f'{target.name}   took   {selection.attack}   damage'
             target.curLife -= selection.attack
             selection.curLife -= target.attack
             if target.effect == 'DivineShield':
@@ -496,7 +498,8 @@ class Game(Mode):
             canvas.create_image(self.width/2, self.height/2, image = getCachedPhotoImage(self.passivePlayerBackground))        
         self.state.opponent.draw(canvas, self.width, self.height, 1)
         self.state.activePlayer.draw(canvas, self.width, self.height, 0) 
-        canvas.create_text(self.width - 10, self.height, text = 'Press "Enter" to end your turn',
+        #TODO make this message more visible
+        canvas.create_text(self.width - 10, self.height, text = 'Press   "Enter"   to   end   your   turn',
          anchor  = 'se', font = 'Helvetica 15', fill = 'black')
         
 
