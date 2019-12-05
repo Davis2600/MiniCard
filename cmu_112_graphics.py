@@ -597,6 +597,8 @@ class App(object):
             App._theRoot.canvas.destroy()
         app._root = root = App._theRoot # singleton root!
         root.app = app
+        #inserted to prevent resizing the window
+        root.resizable(0, 0)
         root.geometry(f'{app.width}x{app.height}+{app.winx}+{app.winy}')
         app.updateTitle()
         # create the canvas
