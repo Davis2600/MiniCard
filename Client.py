@@ -54,8 +54,7 @@ class TitleScreenMode(Mode):
             mode.app.setActiveMode(mode.app.gameMode)
         elif mode.deckButton.checkClicked(event.x, event.y):
             mode.app.setActiveMode(mode.app.deckMode)
-        else:
-            mode.app.setActiveMode(mode.app.loseMode)
+
 
 class WinMode(Mode):
     def appStarted(mode):
