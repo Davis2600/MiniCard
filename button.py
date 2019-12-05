@@ -28,8 +28,6 @@ class Button(object):
 
     def checkClicked(self, x, y):
         if x < self.upperX and x > self.lowerX and y < self.upperY and y > self.lowerY:
-            print('True')
             return True
         else:
-            print('False')
             return False

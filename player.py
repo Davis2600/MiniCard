@@ -165,9 +165,7 @@ class Player(object):
         self.discard = Player.buildZoneFromString(components[10])
 
     def buildDeckFromString(self, string):
-        print('building deck from string', string)
         self.deck = Player.buildZoneFromString(string)
-        print(self.deck)
            
     @staticmethod
     def buildZoneFromString(string):

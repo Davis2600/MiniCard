@@ -10,8 +10,12 @@ from state import GameState
 from deckimport import importDeck
 from button import Button
 from utilities import *
+
+
+
 class ModalGame(ModalApp):
     def appStarted(app):
+        buildCardDict()
         app.deckString = ''
         backgroundImageUrl = 'https://i.imgur.com/XtAYLuq.jpg'
         app.backgroundImage = app.loadImage(backgroundImageUrl)
@@ -22,6 +26,7 @@ class ModalGame(ModalApp):
         app.loseMode = LoseMode()
         app.setActiveMode(app.titleScreenMode)
         app.deckMode = DeckSelectMode()
+        
 
 
 
@@ -31,7 +36,7 @@ class TitleScreenMode(Mode):
         mode.deckButton = Button('Deck   Builder', 5 * mode.width/6, mode.height * 0.80, 200, 100, 'light blue')
         mode.titleImage = getCustomFontText('MiniCard', 45, 'white')
         mode.subMessage = getCustomFontText('a   15  112   creation', 30, 'white')
-
+        mode.creditMessage = getCustomFontText('credit   for   card   images   to  the   shovel   knight   team   at   yacht   club   games', 20, 'white')
 
 
 
@@ -40,6 +45,7 @@ class TitleScreenMode(Mode):
         canvas.create_image(mode.width/2, mode.height/2, image = getCachedPhotoImage(mode.app.backgroundImage))
         canvas.create_image(mode.width/2,mode.height/4, image = getCachedPhotoImage(mode.titleImage))
         canvas.create_image(mode.width/2,mode.height/3, image = getCachedPhotoImage(mode.subMessage))
+        canvas.create_image(mode.width/2, mode.height - 30, image = getCachedPhotoImage(mode.creditMessage))
         mode.startButton.drawButton(canvas)
         mode.deckButton.drawButton(canvas)
         
@@ -48,32 +54,42 @@ class TitleScreenMode(Mode):
             mode.app.setActiveMode(mode.app.gameMode)
         elif mode.deckButton.checkClicked(event.x, event.y):
             mode.app.setActiveMode(mode.app.deckMode)
+        else:
+            mode.app.setActiveMode(mode.app.loseMode)
 
 class WinMode(Mode):
-
+    def appStarted(mode):
+        mode.text = getCustomFontText('You    Win', 100, 'white')
+        mode.getBack = getCustomFontText('press  enter  to   return   to   title   screen', 25, 'white')
     def redrawAll(mode, canvas):
-        canvas.create_text(mode.width/2,mode.height/2, text = "You Win",
-            font = "Helvetica 28", fill = 'green')
+        canvas.create_image(mode.width/2, mode.height/2, image = getCachedPhotoImage(mode.app.backgroundImage))
+        canvas.create_image(mode.width/2,mode.height/2, image = getCachedPhotoImage(mode.text))
+        canvas.create_image(mode.width/2,3 * mode.height/4, image = getCachedPhotoImage(mode.getBack))
 
     def keyPressed(mode, event):
-        mode.app.setActiveMode(mode.app.gameMode)
+        if event.key == 'Enter':
+            mode.app.appStarted()
 
 class LoseMode(Mode):
-
+    def appStarted(mode):
+        mode.text = getCustomFontText('You    Lose', 100, 'white')
+        mode.getBack = getCustomFontText('press  enter  to   return   to   title   screen', 25, 'white')
     def redrawAll(mode, canvas):
-        canvas.create_text(mode.width/2,mode.height/2, text = "You Lose",
-            font = "Helvetica 28", fill = 'red')
+        canvas.create_image(mode.width/2, mode.height/2, image = getCachedPhotoImage(mode.app.backgroundImage))
+        canvas.create_image(mode.width/2,mode.height/2, image = getCachedPhotoImage(mode.text))
+        canvas.create_image(mode.width/2,3 * mode.height/4, image = getCachedPhotoImage(mode.getBack))
 
     def keyPressed(mode, event):
-        mode.app.setActiveMode(mode.app.gameMode)        
+        if event.key == 'Enter':
+            mode.app.appStarted()  
 
 class DeckSelectMode(Mode):
     def appStarted(mode):
+        
         mode.possibleCards = []
         mode.deck = []
         cardListFile = importDeck('cardList.txt')
         mode.possibleCards = DeckSelectMode.buildZoneFromString(cardListFile)
-        print(mode.possibleCards)
         mode.scrollX = 0
         mode.scrollButton = Button('Scroll Foreward', 700, 400, 150, 50, True)
         mode.scrollBackButton = Button('Scroll Backward', 100, 400, 150, 50, True)
@@ -112,7 +128,6 @@ class DeckSelectMode(Mode):
 
     #reused from player class
     def selectCard(mode, x, y):
-        print(mode.possibleCards)
         #remove current selection
         for card in mode.possibleCards:
             card.selected = False
@@ -123,13 +138,11 @@ class DeckSelectMode(Mode):
         for card in mode.possibleCards:
             if card.x + halfWidth > x and card.x - halfWidth < x:
                 if card.y + halfHeight > y and card.y - halfHeight < y:
-                    print('SELECTED', card)
                     card.selected = True
                     mode.selectedFromDeck = False
         for card in mode.deck:
             if card.x + halfWidth > x and card.x - halfWidth < x:
                 if card.y + halfHeight > y and card.y - halfHeight < y:
-                    print('SELECTED', card)
                     card.selected = True  
                     mode.selectedFromDeck = True
 
@@ -162,7 +175,6 @@ class DeckSelectMode(Mode):
                     newCard = Card()
                     newCard.createCardFromString(selectionStr)
                     mode.deck.append(newCard)
-                    print(mode.deck)
                     mode.message = f'{selection.name} added to deck'
                 else:
                     mode.message = 'Deck is Full'
@@ -268,13 +280,11 @@ class Game(Mode):
 
 
     def sendData(self, passive = False):
-        #print('sending Data')
         if not passive:
             data = str(self.network.id) + '|||' + str(self.state)
         else:
             data = self.network.id + '*'
         reply = self.network.send(data)
-        #print('completed')
         if reply == None:
             self.serverIssue = True
             return
@@ -287,7 +297,6 @@ class Game(Mode):
             return
         self.state.activePlayer.buildPlayerFromString(activeP)
         self.state.opponent.buildPlayerFromString(passiveP)
-        #print(type(self.state))
         
 
 
@@ -313,10 +322,8 @@ class Game(Mode):
             self.serverIssue = False
             return
         if event.key == '0':
-            print('switching sides')
             self.state.activePlayer, self.state.opponent = self.state.opponent, self.state.activePlayer
         if event.key == 'Enter' and self.state.activePlayer.currentPlayer == True:
-            #print(self.state.activePlayer)
             for card in self.state.activePlayer.board:
                 card.summoningSickness = False
                 card.attackedThisTurn = False
@@ -352,7 +359,6 @@ class Game(Mode):
     def mouseReleased(self, event):
         if not self.connected or not self.deckSelected:
             return
-        print('released')
         #if selection in hand, try to summon 
         selection = self.state.activePlayer.getSelected()
         if selection == None:
@@ -388,7 +394,6 @@ class Game(Mode):
         leftMargin, rightMargin = 100, self.width - 100
         bottomMargin = self.height - 200
         if Game.checkInField(x, y, (leftMargin, 0, rightMargin, bottomMargin)):
-            print('released in field')
             if self.state.activePlayer.currMana >= selection.cost and len(self.state.activePlayer.board) < 7:
                 if len(self.state.activePlayer.board) == 6:
                     self.state.activePlayer.message = 'You   cannot   summon   more   than   6   monsters'
@@ -431,7 +436,6 @@ class Game(Mode):
                 return 
         #direct attack
         if Game.checkInField(x, y, Player.enemyBoxDims) and not taunt:
-            print('attacking opponent')
             self.state.activePlayer.message = f'{selection.name}   attacked   the   oposing   hero   for   {selection.attack}   damage'
             self.state.opponent.message = f'We  took   {selection.attack}   damage'
             selection.attackedThisTurn = True
@@ -489,10 +493,8 @@ class Game(Mode):
     @staticmethod
     def checkInField(x, y, dims):
         if x > dims[0] and y > dims[1] and x < dims[2] and y < dims[3]:
-            print('True')
             return True
         else:
-            print('False')
             return False
 
         
@@ -514,6 +516,6 @@ class Game(Mode):
         #TODO make this message more visible
         canvas.create_text(self.width - 10, self.height, text = 'Press   "Enter"   to   end   your   turn',
          anchor  = 'se', font = 'Helvetica 15', fill = 'black')
-        
+
 
 app = ModalGame(width = 800, height = 800)
