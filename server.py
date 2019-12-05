@@ -1,3 +1,4 @@
+#this file is the server that handles the two players. should be run separately. change the server name to host online
 import socket
 import sys
 from _thread import *
@@ -29,7 +30,7 @@ player0.currentPlayer = False
 player1.currentPlayer = False
 deck0Str = ''
 deck1Str = ''
-finishedIDs = []
+connectedIDs = []
 #init the shared game 
 def startGame(player0, player1):
     print('Starting Game')
@@ -57,9 +58,9 @@ def startGame(player0, player1):
     
 
 def threadedClient(c):
-    global currId, player0, player1, finishedIDs
+    global currId, player0, player1, connectedIDs
     theID = currId
-
+    connectedIDs.append(currId)
     
     if currId == '0':
         currState = GameState(player0, player1)
@@ -132,8 +133,8 @@ def threadedClient(c):
 
     print('connection finishied', theID)
     #resets server when both parties disconect
-    finishedIDs.append(theID)
-    if len(finishedIDs) == 2:
+    connectedIDs.pop()
+    if len(connectedIDs) == 0:
         print('RESET')
         currId = '0'
         player0 = Player()

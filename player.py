@@ -6,6 +6,7 @@ from cmu_112_graphics import *
 import random
 from card import Card
 from utilities import *
+#player class stores all the data about the player, and makes it easy to pass that data to the server
 class Player(object):
     enemyBoxDims = 300, 0, 600, 100
     manaMax = 10  
@@ -104,7 +105,10 @@ class Player(object):
             
     #reanamed to avoid confusion with draw methods
     def pickupCard(self):
-        self.hand.append(self.deck.pop())
+        if len(self.deck) > 0:
+            self.hand.append(self.deck.pop())
+            return 1
+        return 0
 
     def clearBoard(self):
         removeList = []

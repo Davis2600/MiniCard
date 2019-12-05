@@ -1,9 +1,9 @@
 
 from PIL import Image, ImageFont, ImageDraw, ImageTk
-
-import textwrap
 import requests
 from io import BytesIO
+#the utilites file holds some key functions that need to be accessed at many levels of the code
+
 # Cited From http://code.activestate.com/recipes/580778-tkinter-custom-fonts/
 # Heavily modified to integrate easily into my program
 def getCustomFontText( text, size, fill = 'black'):
@@ -23,7 +23,7 @@ def getCachedPhotoImage(image):
     return image.cachedPhotoImage
 
 # loadImage cited from 
-# http://www.cs.cmu.edu/~112/notes/notes-animations-part1.html
+# http://www.cs.cmu.edu/~112/notes/notes-animations-part1.html as part of the animation framework
 #heavily modified  
 def loadImage(path=None):
     if (path.startswith('http')):
@@ -32,6 +32,9 @@ def loadImage(path=None):
     else:
         image = Image.open(path)
     return image
+
+#this cardImageDict allows the images for each card to be stored and accessed 
+# without having to send them back and forth or store them within the cards
 cardImageDict = {}
 def buildCardDict():
     global cardImageDict

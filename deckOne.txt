@@ -18,4 +18,3 @@ Dragon:10:12:12:12:None:False:-1:-1:6:True:False:False:
 Hound:4:3:5:5:None:False:-1:-1:4:True:False:False:
 Hound:4:3:5:5:None:False:-1:-1:4:True:False:False:
 Hound:4:3:5:5:None:False:-1:-1:4:True:False:False:
-Hound:4:3:5:5:None:False:-1:-1:4:True:False:False:

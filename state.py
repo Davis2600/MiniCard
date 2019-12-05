@@ -1,7 +1,7 @@
 from player import Player
 from card import Card
 
-
+#class that stores an entire game state to send to server
 class GameState(object):
     def __init__(self, activePlayer, opponent):
         self.activePlayer = activePlayer

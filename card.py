@@ -1,3 +1,4 @@
+#the card class
 from tkinter import *
 # cmu_112_graphics cited from 
 # http://www.cs.cmu.edu/~112/notes/notes-animations-part1.html

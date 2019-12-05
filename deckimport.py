@@ -1,5 +1,5 @@
 from card import Card
-
+#method to handle importing decks from files
 def importDeck(filename):
     deckList = open(filename)
     text = deckList.read()
@@ -21,4 +21,3 @@ def importDeck(filename):
     deckStr = deckStr[0:-1]
     return deckStr
 
-deck = importDeck('deckOne.txt')

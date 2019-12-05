@@ -153,3 +153,10 @@ the initial Design Document I shared, Though I do have more detail regarding my 
 algorithm. I ended up having to build very particular custom repr functions for both the cards
 and the player class and a function in both the player and card class that can recreate an 
 object given a repr output. 
+***********************************************************************************************
+TP3 UPDATE:
+***********************************************************************************************
+The high level design of my project has not changed since TP1. Everything is consistent with 
+the initial Design Document I shared. Though I decided to store my information in .txt files instead
+of .csv files. Also, I spent a great deal of time improving the graphical interface, and decided to 
+forgo the stat tracking features detailed in my storyboard.

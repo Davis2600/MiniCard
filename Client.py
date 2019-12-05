@@ -12,7 +12,7 @@ from button import Button
 from utilities import *
 
 
-
+#Main App
 class ModalGame(ModalApp):
     def appStarted(app):
         buildCardDict()
@@ -26,18 +26,40 @@ class ModalGame(ModalApp):
         app.loseMode = LoseMode()
         app.setActiveMode(app.titleScreenMode)
         app.deckMode = DeckSelectMode()
+        app.helpMode = HelpMode()
         
+class HelpMode(Mode):
+    def appStarted(mode):
+        mode.backButton = Button('Back', 600, 750, 100, 50)
+
+    def mousePressed(mode, event):
+        if mode.backButton.checkClicked(event.x, event.y):
+            mode.app.setActiveMode(mode.app.titleScreenMode)
+
+    def redrawAll(mode, canvas):
+        canvas.create_image(mode.width/2, mode.height/2, image = getCachedPhotoImage(mode.app.backgroundImage))
+        canvas.create_text(10,10, text = 'Help', font = 'Helvetica 20', anchor = 'nw', fill = 'white')
+        canvas.create_text(10, 30, text = 'MiniCard is a simple, two player card game. to play, each player takes\n turns summoning creatures', font = 'Helvetica 20', anchor = 'nw', fill = 'white')
+        canvas.create_text(10, 80, text = 'To summon these creatures, each player spends mana. you start with 10\nmana, and that gradually increases over a game', font = 'Helvetica 20', anchor = 'nw', fill = 'white')
+        canvas.create_text(10, 130, text = 'The Cost of each card is indicated in the upper left hand corner of the\n card. cards also have effects, attack, and life', font = 'Helvetica 20', anchor = 'nw', fill = 'white')
+        canvas.create_text(10, 180, text = 'Cards can attack when they are on the field for more than one turn. \nthey can attack the opponents cards, or the opponent direcltly', font = 'Helvetica 20', anchor = 'nw', fill = 'white')
+        canvas.create_text(10, 230, text = 'when you attack the opponent direclty. the opponent loses health equal\n to the attack of your card', font = 'Helvetica 20', anchor = 'nw', fill = 'white')
+        canvas.create_text(10, 280, text = 'when cards attack each other, they each deal damage equal to their \nattack to each other', font = 'Helvetica 20', anchor = 'nw', fill = 'white')
+        canvas.create_text(10, 330, text = 'The first player to get the opponent down to 0 life, or the last \nplayer to have cards in their deck wins', font = 'Helvetica 20', anchor = 'nw', fill = 'white')
+        canvas.create_text(10, 380, text = 'each card also has unique effects that bend the way the rules work, \nthese effects apply automatically, so you will get the', font = 'Helvetica 20', anchor = 'nw', fill = 'white')
+        canvas.create_text(10, 430, text = 'hang of it quickly! Have fun', font = 'Helvetica 20', anchor = 'nw', fill = 'white')
+        mode.backButton.drawButton(canvas)
 
 
-
+# Hub/Title Screen
 class TitleScreenMode(Mode):
     def appStarted(mode):
         mode.startButton = Button('Start', mode.width/6, mode.height * 0.80, 200, 100)
-        mode.deckButton = Button('Deck   Builder', 5 * mode.width/6, mode.height * 0.80, 200, 100, 'light blue')
+        mode.deckButton = Button('Deck   Builder', mode.width/2, mode.height * 0.80, 200, 100)
+        mode.helpButton = Button('Help', 5 * mode.width/6, mode.height * 0.80, 200, 100)
         mode.titleImage = getCustomFontText('MiniCard', 45, 'white')
         mode.subMessage = getCustomFontText('a   15  112   creation', 30, 'white')
         mode.creditMessage = getCustomFontText('credit   for   card   images   to  the   shovel   knight   team   at   yacht   club   games', 20, 'white')
-
 
 
     def redrawAll(mode, canvas):
@@ -48,12 +70,15 @@ class TitleScreenMode(Mode):
         canvas.create_image(mode.width/2, mode.height - 30, image = getCachedPhotoImage(mode.creditMessage))
         mode.startButton.drawButton(canvas)
         mode.deckButton.drawButton(canvas)
+        mode.helpButton.drawButton(canvas)
         
     def mousePressed(mode, event):
         if mode.startButton.checkClicked(event.x, event.y):
             mode.app.setActiveMode(mode.app.gameMode)
         elif mode.deckButton.checkClicked(event.x, event.y):
             mode.app.setActiveMode(mode.app.deckMode)
+        elif mode.helpButton.checkClicked(event.x, event.y):
+            mode.app.setActiveMode(mode.app.helpMode)
 
 
 class WinMode(Mode):
@@ -82,6 +107,7 @@ class LoseMode(Mode):
         if event.key == 'Enter':
             mode.app.appStarted()  
 
+#Deckbuilder
 class DeckSelectMode(Mode):
     def appStarted(mode):
         
@@ -231,7 +257,7 @@ class DeckSelectMode(Mode):
         mode.backButton.drawButton(canvas)
         canvas.create_text(mode.width - 20, 0, text = mode.message, font = 'Helevetica 20', anchor = 'ne', fill = 'red')
 
-
+#The main course, the Game itsself
 class Game(Mode):
     def appStarted(self):
         self.timePassed = 0
@@ -247,6 +273,7 @@ class Game(Mode):
         passivelPlayerBackgroundUrl = 'https://i.imgur.com/jmzZ2FN.jpg'
         self.activePlayerBackground = self.loadImage(activePlayerBackgroundUrl)
         self.passivePlayerBackground = self.loadImage(passivelPlayerBackgroundUrl)
+        self.nextTurnButton = Button('End   Turn', 700, 400, 100, 50, True)
 
         while deck == None:
             try:
@@ -297,12 +324,16 @@ class Game(Mode):
         self.state.activePlayer.buildPlayerFromString(activeP)
         self.state.opponent.buildPlayerFromString(passiveP)
         
-
-
     
     def mousePressed(self, event):
         if not self.connected or not self.deckSelected:
             return
+        if self.nextTurnButton.checkClicked(event.x,event.y) and self.state.activePlayer.currentPlayer == True:
+            for card in self.state.activePlayer.board:
+                card.summoningSickness = False
+                card.attackedThisTurn = False
+            self.swapTurns()
+            self.sendData()
         self.state.activePlayer.selectCard(event.x, event.y)
         selection = self.state.activePlayer.getSelected()
         if selection != None and selection in self.state.activePlayer.board:
@@ -341,7 +372,11 @@ class Game(Mode):
                     if activePlayer.firstTurn:
                         activePlayer.firstTurn = False
                     else:
-                        activePlayer.pickupCard()
+                        losecheck = activePlayer.pickupCard()
+                        if losecheck == 0:
+                            self.state.opponent.health = 0
+                            self.app.setActiveMode(self.app.winMode)
+                            self.checkWin()    
                         if activePlayer.mana < activePlayer.manaMax:
                             activePlayer.mana += 1
                         activePlayer.currMana = activePlayer.mana
@@ -505,6 +540,7 @@ class Game(Mode):
             return
         if not self.connected or not self.deckSelected:
             return
+        
         #canvas.create_rectangle(100, 0, 700, 500, fill = 'light blue')
         if self.state.activePlayer.currentPlayer == True:
             canvas.create_image(self.width/2, self.height/2, image = getCachedPhotoImage(self.activePlayerBackground))
@@ -513,8 +549,9 @@ class Game(Mode):
         self.state.opponent.draw(canvas, self.width, self.height, 1)
         self.state.activePlayer.draw(canvas, self.width, self.height, 0) 
         #TODO make this message more visible
-        canvas.create_text(self.width - 10, self.height, text = 'Press   "Enter"   to   end   your   turn',
-         anchor  = 'se', font = 'Helvetica 15', fill = 'black')
+        #canvas.create_text(self.width - 10, self.height, text = 'Press   "Enter"   to   end   your   turn',
+        # anchor  = 'se', font = 'Helvetica 15', fill = 'black')
+        self.nextTurnButton.drawButton(canvas)
 
 
 app = ModalGame(width = 800, height = 800)

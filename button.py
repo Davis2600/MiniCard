@@ -1,5 +1,5 @@
 from utilities import *
-
+#class for uniform buttons across my project
 class Button(object):
     def __init__(self, text, x, y, width, height, smallText = False):
         self.x = x
