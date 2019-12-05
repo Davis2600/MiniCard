@@ -91,6 +91,7 @@ class DeckSelectMode(Mode):
             card.summoningSickness = False
 
     def mousePressed(mode, event):
+        
         if mode.scrollButton.checkClicked(event.x, event.y) and mode.scrollX < 1000:
             mode.scrollX += mode.scrollDist
         elif mode.scrollBackButton.checkClicked(event.x, event.y) and mode.scrollX > 0:
@@ -249,19 +250,31 @@ class Game(Mode):
 
         except:
             self.serverIssue = True
+            self.deckSelected = False
+            self.deck = None
         #self.startGame()
         if self.deckSelected and self.connected:
             self.state.activePlayer.firstTurn = False 
+            if self.network.id == '0':
+                opponentImageUrl = 'https://i.imgur.com/49O2D8T.png'
+                self.state.activePlayer.opponentImage = self.loadImage(opponentImageUrl)
+                opponentImageUrl = 'https://i.imgur.com/FxJDMuo.png'
+                self.state.opponent.opponentImage = self.loadImage(opponentImageUrl)
+            else:
+                opponentImageUrl = 'https://i.imgur.com/FxJDMuo.png'
+                self.state.activePlayer.opponentImage = self.loadImage(opponentImageUrl)
+                opponentImageUrl = 'https://i.imgur.com/49O2D8T.png'
+                self.state.opponent.opponentImage = self.loadImage(opponentImageUrl)
 
 
     def sendData(self, passive = False):
-        print('sending Data')
+        #print('sending Data')
         if not passive:
             data = str(self.network.id) + '|||' + str(self.state)
         else:
             data = self.network.id + '*'
         reply = self.network.send(data)
-        print('completed')
+        #print('completed')
         if reply == None:
             self.serverIssue = True
             return
@@ -274,7 +287,7 @@ class Game(Mode):
             return
         self.state.activePlayer.buildPlayerFromString(activeP)
         self.state.opponent.buildPlayerFromString(passiveP)
-        print(type(self.state))
+        #print(type(self.state))
         
 
 

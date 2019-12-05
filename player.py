@@ -21,9 +21,10 @@ class Player(object):
         self.discard = []
         self.board = []
         self.makeBasicDeck()
-        self.message = '' #message to be displayed to the player at a given time
+        self.message = 'connecting' #message to be displayed to the player at a given time
         self.gameStarted = False
         random.shuffle(self.deck)
+        self.opponentImage = None #only the opponent is visualized, so this all that needs to be known 
 
     def draw(self, canvas, width, height, side):
         #Draw Hand 
@@ -33,7 +34,7 @@ class Player(object):
         #Draw Deck
         canvas.create_rectangle(675, 575, 775, 725, fill = 'black', outline = 'cyan', width = 6)
         #TODO update
-        deckTextTop = getCustomFontText('Deck:', 30, 'cyan')
+        deckTextTop = getCustomFontText('Deck', 30, 'cyan')
         deckTextBottom = getCustomFontText(str(len(self.deck)), 30, 'cyan')
         canvas.create_image(720, 600, image = getCachedPhotoImage(deckTextTop))
         canvas.create_image(720, 630, image = getCachedPhotoImage(deckTextBottom))
@@ -68,25 +69,25 @@ class Player(object):
                 X += 150    
             canvas.create_rectangle(Player.enemyBoxDims[0], Player.enemyBoxDims[1], 
                                      Player.enemyBoxDims[2], Player.enemyBoxDims[3],
-                                     fill = 'red')
-
+                                     fill = 'black', outline = 'magenta', width = 6)
+            enemyX = Player.enemyBoxDims[2] - Player.enemyBoxDims[0]
+            enemyY = Player.enemyBoxDims[3] - Player.enemyBoxDims[1]
+            canvas.create_image(500, 50, image = getCachedPhotoImage(self.opponentImage))
 
     def drawHud(self, canvas, width, height, side):
         if side == 0:
+
             messageText = getCustomFontText(self.message, 25, 'cyan')
-        
-            canvas.create_image(25, 575, image = getCachedPhotoImage(messageText), anchor = 'nw')
-            canvas.create_text(5, width, anchor = 'sw', text = str(self.currMana), font = 'Helvetica 30', 
-                           fill = 'blue')
-            canvas.create_text(5, height - 30, anchor = 'sw', text = str(self.health), font = 'Helvetica 30', 
-                           fill = 'red')
+            healthText = getCustomFontText(f'LIFE   {self.health}', 25, 'cyan')
+            manaText = getCustomFontText(f'MANA   {self.currMana}', 25, 'cyan')
+            canvas.create_image(30, 575, image = getCachedPhotoImage(messageText), anchor = 'nw')
+            canvas.create_image(637, 525, image = getCachedPhotoImage(healthText), anchor = 'nw')
+            canvas.create_image(637, 500, image = getCachedPhotoImage(manaText), anchor = 'nw')
         if side  == 1:
-            canvas.create_text(Player.enemyBoxDims[0], Player.enemyBoxDims[1], anchor = 'nw', text = str(self.currMana), font = 'Helvetica 30', 
-                           fill = 'blue')
-            canvas.create_text(Player.enemyBoxDims[2], Player.enemyBoxDims[3], anchor = 'se', text = str(self.health), font = 'Helvetica 30', 
-                           fill = 'black')            
-
-
+            healthTextOpponnent = getCustomFontText(f'LIFE   {self.health}', 25, 'magenta')
+            manaTextOpponent = getCustomFontText(f'MANA   {self.currMana}', 25, 'magenta')
+            canvas.create_image(330, 13, image = getCachedPhotoImage(healthTextOpponnent), anchor = 'nw')
+            canvas.create_image(330, 70, image = getCachedPhotoImage(manaTextOpponent), anchor = 'nw')
     def makeBasicDeck(self):
         for i in range(3):
             self.deck.append(Card('Newt', 1, (2,1), 'Rush'))
@@ -156,8 +157,8 @@ class Player(object):
         self.mana = int(components[2])
         self.currMana = int(components[3])
         self.firstTurn = (components[4] == 'True')
-        self.message = components[5]
-        self.gameStarted = components[6]
+        self.message = components[6]
+        self.gameStarted = components[5]
         self.deck = Player.buildZoneFromString(components[7])
         self.hand = Player.buildZoneFromString(components[8])
         self.board = Player.buildZoneFromString(components[9])

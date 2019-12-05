@@ -8,7 +8,7 @@ def importDeck(filename):
     deckStr = ''
     for line in lines:
         try:
-            print(line)
+            #print(line)
             newcard = Card()
             newcard.createCardFromString(line)
             deck.append(newcard)
@@ -23,4 +23,4 @@ def importDeck(filename):
     return deckStr
 
 deck = importDeck('deckOne.txt')
-print(deck)
+#print(deck)
