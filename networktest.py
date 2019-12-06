@@ -2,6 +2,7 @@ import socket
 from player import Player
 from state import GameState
 #network class that the client uses to interact with the server
+
 class Network:
     def __init__(self):
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
