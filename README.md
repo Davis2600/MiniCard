@@ -4,7 +4,7 @@ Hello.
 Welcome to MiniCard! a fun little python based card game. here's all the information you 
 need to get started. 
 
-![Image of Start Screen](https://imgur.com/a/uf0bsfN)
+![Image of Start Screen](https://imgur.com/lRRfakT)
 
 
 
@@ -17,9 +17,9 @@ can be easily shared with friends. The gameplay is quick to pick up, and provide
 interesting depth with all of the in game effects and mechanics. 
 
 ### Battle
-![Image of Battle](https://imgur.com/a/HJeRqn2)
+![Image of Battle](https://imgur.com/4Zk73KB)
 ### DeckBuilder 
-![Image of DeckBuilder](https://imgur.com/a/kGUKBxP)
+![Image of DeckBuilder](https://imgur.com/3pH2qeF)
 
 ## How to Run
 
