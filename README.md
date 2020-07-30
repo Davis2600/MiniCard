@@ -4,6 +4,9 @@ Hello.
 Welcome to MiniCard! a fun little python based card game. here's all the information you 
 need to get started. 
 
+![Image of Start Screen](https://imgur.com/a/uf0bsfN)
+
+
 
 ## Description
 
@@ -13,6 +16,10 @@ jumping into battle against other players online. deck lists are saved as .txt f
 can be easily shared with friends. The gameplay is quick to pick up, and provides 
 interesting depth with all of the in game effects and mechanics. 
 
+### Battle
+![Image of Battle](https://imgur.com/a/HJeRqn2)
+### DeckBuilder 
+![Image of DeckBuilder](https://imgur.com/a/kGUKBxP)
 
 ## How to Run
 
@@ -35,9 +42,3 @@ requests
 sockets
 the only thing you should have to install is PIL!!
 
-
-## Shortcuts
-
-When the game is run locally. the user has access to both sides of the game; therefore
-almost any game state can be recreated with minimal effort. It is for this reason that 
-there are no shortcuts/cheat codes.
